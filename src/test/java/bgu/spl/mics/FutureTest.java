@@ -33,6 +33,7 @@ public class FutureTest {
 
     @Test
     public void blockingGet() {
+        assertFalse(future.isDone(), "Done before resolved");
         Thread resolver = new Thread(() -> {
             try {
                 Thread.sleep(20);
@@ -43,6 +44,7 @@ public class FutureTest {
         });
         resolver.start();
         assertEquals(7, future.get(), "Different result after resolve");
+        assertTrue(future.isDone(), "Not done after resolve");
         try {
             resolver.join();
         } catch (InterruptedException e) {
@@ -52,6 +54,7 @@ public class FutureTest {
 
     @Test
     public void timedGet_notWaitingTilTimoutWhenResolved() {
+        assertFalse(future.isDone(), "Done before resolved");
         Thread resolver = new Thread(() -> {
             try {
                 Thread.sleep(20);
@@ -70,6 +73,7 @@ public class FutureTest {
         assertEquals(7, result, "Different result after resolve");
         System.out.println("duration: " + duration);
         assertTrue(20 <= duration && duration <= 22, "Blocked for longer than neeeded");
+        assertTrue(future.isDone(), "Not done after resolve");
         try {
             resolver.interrupt();
             resolver.join();
@@ -80,6 +84,7 @@ public class FutureTest {
 
     @Test
     public void timedGet_timeout() {
+        assertFalse(future.isDone(), "Done before resolved");
         Thread resolver = new Thread(() -> {
             try {
                 Thread.sleep(50);
@@ -97,6 +102,8 @@ public class FutureTest {
         long duration = end - start;
         assertNull(result, "Got some result despite timeout");
         assertTrue(30 <= duration && duration <= 32, "Blocked for longer than neeeded");
+        assertFalse(future.isDone(), "Done despite timeout");
+
         try {
             resolver.interrupt();
             resolver.join();

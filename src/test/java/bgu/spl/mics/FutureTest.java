@@ -68,8 +68,8 @@ public class FutureTest {
         long start = System.currentTimeMillis();
         Integer result = future.get(50, TimeUnit.MILLISECONDS);
         long end = System.currentTimeMillis();
-
         long duration = end - start;
+
         assertEquals(7, result, "Different result after resolve");
         System.out.println("duration: " + duration);
         assertTrue(20 <= duration && duration <= 22, "Blocked for longer than neeeded");
@@ -98,8 +98,8 @@ public class FutureTest {
         long start = System.currentTimeMillis();
         Integer result = future.get(30, TimeUnit.MILLISECONDS);
         long end = System.currentTimeMillis();
-
         long duration = end - start;
+
         assertNull(result, "Got some result despite timeout");
         assertTrue(30 <= duration && duration <= 32, "Blocked for longer than neeeded");
         assertFalse(future.isDone(), "Done despite timeout");

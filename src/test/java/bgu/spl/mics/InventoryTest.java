@@ -2,9 +2,9 @@ package bgu.spl.mics;
 
 import bgu.spl.mics.application.passiveObjects.Inventory;
 import com.google.gson.Gson;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
 
@@ -39,8 +39,7 @@ public class InventoryTest {
         }
 
         for(int i=0; i < 4; i=i+1 ){
-            Assert.assertTrue("singleInstance: The class Inventory is not thread safe",
-                    inventories[i] != inventories[i+1]);
+            assertNotSame(inventories[i], inventories[i + 1], "singleInstance: The class Inventory is not thread safe");
         }
 
 
@@ -61,7 +60,7 @@ public class InventoryTest {
             writer.close();
         }
         catch (Exception e){
-            Assert.assertTrue(funcName+e.getMessage(), false);
+            fail(funcName + e.getMessage());
             System.out.println(e.getMessage());
         }
 
@@ -70,16 +69,17 @@ public class InventoryTest {
             String[] json2;
             json2 = gson.fromJson(reader, String[].class);
             if(inventory.length != json2.length){
-                Assert.assertTrue(funcName + ": json are not in the same lenght", false);
+                fail(funcName + ": json are not in the same length");
             }else {
                 for (int i = 0; i < json2.length; i = i + 1) {
-                    Assert.assertFalse(funcName + ": load and then print are not identical output", inventory[i].compareTo(json2[i])!=0);
+                    assertFalse(inventory[i].compareTo(json2[i]) != 0,
+                            funcName + ": load and then print are not identical output");
                 }
             }
             reader.close();
         }
-        catch (Exception e){
-            Assert.assertTrue(funcName+e.getMessage(), false);
+        catch (Exception e) {
+            fail(funcName + e.getMessage());
             System.out.println(e.getMessage());
         }
     }

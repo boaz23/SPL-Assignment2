@@ -16,6 +16,9 @@ public class SquadTest {
     List<String> agentSerialNums;
 
     @BeforeEach
+    /*
+    Loads some agents to work with in every test
+     */
     public void setUp() {
         squad = Squad.getInstance();
         agents = new Agent[] {
@@ -36,6 +39,9 @@ public class SquadTest {
     }
 
     @Test
+    /*
+    Tests that the squads load correctly and that it returns the names of the requested agents (and only of them)
+     */
     public void testLoadAndGetNames() {
         agents[0].setName("Jessie");
         agents[1].setName("James");
@@ -64,6 +70,9 @@ public class SquadTest {
     }
 
     @Test
+    /*
+    Tests that getting agents which do no exists result in returning false (as defined)
+     */
     public void testGetAgents_invalidSerialNumber() {
         agentSerialNums = new ArrayList<String>() {{
             add("007");
@@ -73,17 +82,28 @@ public class SquadTest {
     }
 
     @Test
-    public void testGetAgents_allRelasedOnInvalidSerialNumber() {
+    /*
+    Tests that the availability of every (existing) agent passed to @see getAgents does not change
+    if an invalid agent was passed to it (even if some were unavailable)
+     */
+    public void testGetAgents_availableDoesntChangeOnInvalidSerialNumber() {
+        agents[0].acquire();
         agentSerialNums = new ArrayList<String>() {{
-            add("000");
+            add("001");
             add("007");
+            add("000");
         }};
 
         assertFalse(squad.getAgents(agentSerialNums), "Agent does not exists but it went smooth");
-        assertTrue(agents[0].isAvailable(), "Agent should be available");
+        assertFalse(agents[0].isAvailable(), "Agent should be available");
+        assertTrue(agents[1].isAvailable(), "Agent should be available");
     }
 
     @Test
+    /*
+    Tests that the getAgents exits correctly and that the availability of the agents
+     passed it stays unchanged when every agent passed to is available beforehand
+     */
     public void testGetAgents_allRelased() {
         agentSerialNums = new ArrayList<String>() {{
             add("000");
@@ -96,6 +116,9 @@ public class SquadTest {
     }
 
     @Test
+    /*
+    Tests that getAgents waits for the agents to become available if they're not beforehand
+     */
     public void testGetAgents_waitsForAvailability() {
         agentSerialNums = new ArrayList<String>() {{
             add("000");
@@ -120,6 +143,7 @@ public class SquadTest {
         long duration = end - start;
 
         assertTrue(result, "All agents should exist in the squad");
+        // error margin of 2ms
         assertTrue(50 <= duration && duration <= 52, "Didn't wait or waited too much");
 
         try {
@@ -131,6 +155,9 @@ public class SquadTest {
     }
 
     @Test
+    /*
+    Tests that releaseAgents release all and only the agents it gets passed as arguments
+     */
     public void testReleaseAgents() {
         agentSerialNums = new ArrayList<String>() {{
             add("002");
@@ -147,7 +174,11 @@ public class SquadTest {
     }
 
     @Test
-    public void testSendAgents() {
+    /*
+    Tests that sendAgents releases all and only the agents it gets passed as arguments
+    and that it blocks for exactly the amount of time specified in the time argument.
+     */
+    public void testSendAgents_allReleased() {
         agentSerialNums = new ArrayList<String>() {{
             add("000");
             add("002");
@@ -165,6 +196,7 @@ public class SquadTest {
         assertFalse(agents[1].isAvailable(), "Agent should unavailable as it was not sent");
         assertTrue(agents[2].isAvailable(), "Agent sgould be available because it was sent");
 
+        // error margin of 2ms
         assertTrue(50 <= duration && duration <= 52, "Didn't sleep or slept too much");
     }
 }

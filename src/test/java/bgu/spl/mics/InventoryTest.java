@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
+import java.util.Arrays;
 
 public class InventoryTest {
 
@@ -14,6 +15,9 @@ public class InventoryTest {
     public void setUp(){
     }
 
+    /**
+     * Test if the class creates 1 instance.
+     */
     @Test
     public void singleInstance(){
         Thread[] tInstances = new Thread[5];
@@ -23,7 +27,7 @@ public class InventoryTest {
         for(int i=0; i < 5; i=i+1 ){
             final int index = i;
             tInstances[i] = new Thread(() ->
-                    inventories[index] = new Inventory());
+                    inventories[index] = Inventory.getInstance());
         }
 
         // Run the threads
@@ -45,31 +49,33 @@ public class InventoryTest {
 
     }
 
+    /**
+     * Since the {@code Inventory.getItem} function is internal,
+     * the only way to check load and printTofile, is to combine them to the
+     * same test.
+     */
     @Test
     public void loadAndPrintToFileJson(){
-        Inventory inv = new Inventory();
+        Inventory inv = Inventory.getInstance();
         Gson gson = new Gson();
+
         String[] inventory = {"Car", "Phone"};
-        String json = gson.toJson(inventory);
+        Arrays.sort(inventory);
+
         String funcName = "loadAndPrintToFileJson ";
-        String filName = "src/test/TestFiles/inv.json";
+        String fileName = "src/test/TestFiles/inv.json";
+
+        inv.load(inventory);
+        inv.printToFile(fileName);
 
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(filName));
-            writer.write(json);
-            writer.close();
-        }
-        catch (Exception e){
-            fail(funcName + e.getMessage());
-            System.out.println(e.getMessage());
-        }
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filName));
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
             String[] json2;
             json2 = gson.fromJson(reader, String[].class);
+            Arrays.sort(json2);
+
             if(inventory.length != json2.length){
-                fail(funcName + ": json are not in the same length");
+                fail(funcName + ": json inventory items are not in the same length");
             }else {
                 for (int i = 0; i < json2.length; i = i + 1) {
                     assertFalse(inventory[i].compareTo(json2[i]) != 0,

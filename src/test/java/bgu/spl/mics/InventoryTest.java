@@ -2,91 +2,39 @@ package bgu.spl.mics;
 
 import bgu.spl.mics.application.passiveObjects.Inventory;
 import com.google.gson.Gson;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
 import java.util.Arrays;
 
 public class InventoryTest {
 
+    private Inventory inventory;
+
     @BeforeEach
     public void setUp(){
+        inventory = Inventory.getInstance();
     }
 
     /**
-     * Test if the class creates 1 instance.
+     * Since in order to check load() we need getItem() and in order the check
+     * getItem() we need load(), we are testing them together.
+     * Test 2 options in getItem, not exist item in the inventory and existing one.
+     * To check the load(), we test for each gadget if its exist with getItem()
      */
     @Test
-    public void singleInstance(){
-        Thread[] tInstances = new Thread[5];
-        Inventory[] inventories = new Inventory[5];
+    public void loadAndGetItem() {
 
-        // Create the threads
-        for(int i=0; i < 5; i=i+1 ){
-            final int index = i;
-            tInstances[i] = new Thread(() ->
-                    inventories[index] = Inventory.getInstance());
-        }
+        String[] gadgets = {"Car", "Phone"};
+        inventory.load(gadgets);
 
-        // Run the threads
-        for(int i=0; i < 5; i=i+1 ){
-            tInstances[i].start();
-        }
+        assertFalse(inventory.getItem("Car2"),"Inventory getItem(), Car2 is not a gadget in inventory class");
+        assertFalse(inventory.getItem("PhOnE"),"Inventory getItem(), PhOnE is not a gadget in inventory class");
 
-        // wait for them to finish
-        for(int i=0; i < 5; i=i+1 ){
-            try {
-                tInstances[i].join();
-            } catch (Exception e) {}
-        }
+        assertFalse(inventory.getItem("Phone"),"Inventory getItem(), Phone is a gadget in inventory class");
+        assertFalse(inventory.getItem("Car"),"Inventory getItem(), Car is a gadget in inventory class");
 
-        for(int i=0; i < 4; i=i+1 ){
-            assertNotSame(inventories[i], inventories[i + 1], "singleInstance: The class Inventory is not thread safe");
-        }
-
-
-    }
-
-    /**
-     * Since the {@code Inventory.getItem} function is internal,
-     * the only way to check load and printTofile, is to combine them to the
-     * same test.
-     */
-    @Test
-    public void loadAndPrintToFileJson(){
-        Inventory inv = Inventory.getInstance();
-        Gson gson = new Gson();
-
-        String[] inventory = {"Car", "Phone"};
-        Arrays.sort(inventory);
-
-        String funcName = "loadAndPrintToFileJson ";
-        String fileName = "src/test/TestFiles/inv.json";
-
-        inv.load(inventory);
-        inv.printToFile(fileName);
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
-            String[] json2;
-            json2 = gson.fromJson(reader, String[].class);
-            Arrays.sort(json2);
-
-            if(inventory.length != json2.length){
-                fail(funcName + ": json inventory items are not in the same length");
-            }else {
-                for (int i = 0; i < json2.length; i = i + 1) {
-                    assertFalse(inventory[i].compareTo(json2[i]) != 0,
-                            funcName + ": load and then print are not identical output");
-                }
-            }
-            reader.close();
-        }
-        catch (Exception e) {
-            fail(funcName + e.getMessage());
-            System.out.println(e.getMessage());
-        }
     }
 }

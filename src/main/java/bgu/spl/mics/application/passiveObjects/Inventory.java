@@ -45,8 +45,8 @@ public class Inventory {
 	/**
 	 *
 	 * <p>
-	 * Prints to a file name @filename a serialized object List<Gadget> which is a
-	 * List of all the reports in the diary.
+	 * Prints to a file name @filename a serialized object List<String> which is a
+	 * list of all the of the gadgeds.
 	 * This method is called by the main method in order to generate the output.
 	 */
 	public void printToFile(String filename){

@@ -11,17 +11,12 @@ import java.util.concurrent.TimeUnit;
  * No public constructor is allowed except for the empty constructor.
  */
 public class Future<T> {
-	private T result;
-	private boolean isDone;
-	private Thread blocker;
-
+	
 	/**
 	 * This should be the the only public constructor in this class.
 	 */
 	public Future() {
-		result = null;
-		isDone = false;
-		blocker = null;
+		//TODO: implement this
 	}
 	
 	/**
@@ -33,33 +28,23 @@ public class Future<T> {
      * 	       
      */
 	public T get() {
-		if (!isDone) {
-			initBlocker();
-			while (!isDone) {
-				try {
-					blocker.join();
-				} catch (InterruptedException ignored) {
-				}
-			}
-		}
-
-		return result;
+		//TODO: implement this.
+		return null;
 	}
-
+	
 	/**
      * Resolves the result of this Future object.
      */
-	public void resolve(T result) {
-		this.result = result;
-		isDone = true;
-		stopBlocking();
+	public void resolve (T result) {
+		//TODO: implement this.
 	}
-
+	
 	/**
      * @return true if this object has been resolved, false otherwise
      */
 	public boolean isDone() {
-		return isDone;
+		//TODO: implement this.
+		return false;
 	}
 	
 	/**
@@ -74,35 +59,8 @@ public class Future<T> {
      *         elapsed, return null.
      */
 	public T get(long timeout, TimeUnit unit) {
-		if (!isDone) {
-			initBlocker();
-			try {
-				unit.timedJoin(blocker, timeout);
-			} catch (InterruptedException ignored) { }
-		}
-
-		return result;
+		//TODO: implement this.
+		return null;
 	}
 
-	private void initBlocker() {
-		if (blocker == null) {
-			blocker = new Thread(() -> {
-				while (!isDone && !Thread.currentThread().isInterrupted()) {
-					try {
-						Thread.sleep(5);
-					} catch (InterruptedException ignored) { }
-				}
-			});
-			blocker.start();
-		}
-		if (blocker.getState() == Thread.State.TERMINATED) {
-			blocker.start();
-		}
-	}
-
-	private void stopBlocking() {
-		if (blocker != null) {
-			blocker.interrupt();
-		}
-	}
 }

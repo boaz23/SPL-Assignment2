@@ -77,11 +77,8 @@ public class FutureTest {
         assertTrue(20 <= duration && duration <= 22, "Waited too long or too little to get the result");
         assertEquals(7, result, "Different result after resolve");
         assertTrue(future.isDone(), "Not done after resolve");
-        try {
-            resolver.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        Utils.closeThread(resolver);
     }
 
     @Test
@@ -110,12 +107,8 @@ public class FutureTest {
         // error margin of 2ms
         assertTrue(20 <= duration && duration <= 22, "Waited too long or too little to get the result");
         assertTrue(future.isDone(), "Not done after resolve");
-        try {
-            resolver.interrupt();
-            resolver.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        Utils.closeThread(resolver);
     }
 
     @Test
@@ -144,11 +137,6 @@ public class FutureTest {
         assertTrue(30 <= duration && duration <= 32, "Blocked for longer than neeeded");
         assertFalse(future.isDone(), "Done despite timeout");
 
-        try {
-            resolver.interrupt();
-            resolver.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Utils.closeThread(resolver);
     }
 }

@@ -39,4 +39,12 @@ abstract class RunnableSubPub implements Runnable {
     public SimplePublisher getSimplePublisher() {
         return simplePublisher;
     }
+
+    protected <T> Future<T> sendEvent(Event<T> e) {
+        return simplePublisher.sendEvent(e);
+    }
+
+    protected void sendBroadcast(Broadcast b) {
+        simplePublisher.sendBroadcast(b);
+    }
 }

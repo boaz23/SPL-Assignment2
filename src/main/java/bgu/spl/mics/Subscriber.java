@@ -1,5 +1,8 @@
 package bgu.spl.mics;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The Subscriber is an abstract class that any subscriber in the system
  * must extend. The abstract Subscriber class is responsible to get and
@@ -17,6 +20,8 @@ package bgu.spl.mics;
  */
 public abstract class Subscriber extends RunnableSubPub {
     private boolean terminated = false;
+    private MessageBroker messageBroker;
+    private Map<Class<? extends Message>, Callback<?>> messageCallbacks;
 
     /**
      * @param name the Subscriber name (used mainly for debugging purposes -
@@ -24,6 +29,8 @@ public abstract class Subscriber extends RunnableSubPub {
      */
     public Subscriber(String name) {
         super(name);
+        messageBroker = MessageBrokerImpl.getInstance();
+        messageCallbacks = new HashMap<>();
     }
 
     /**
@@ -48,7 +55,8 @@ public abstract class Subscriber extends RunnableSubPub {
      *                 queue.
      */
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
-        //TODO: implement this.
+        messageBroker.subscribeEvent(type, this);
+        messageCallbacks.put(type, callback);
     }
 
     /**
@@ -72,7 +80,8 @@ public abstract class Subscriber extends RunnableSubPub {
      *                 queue.
      */
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
-        //TODO: implement this.
+        messageBroker.subscribeBroadcast(type, this);
+        messageCallbacks.put(type, callback);
     }
 
     /**
@@ -86,7 +95,7 @@ public abstract class Subscriber extends RunnableSubPub {
      *               {@code e}.
      */
     protected final <T> void complete(Event<T> e, T result) {
-        //TODO: implement this.
+        messageBroker.complete(e, result);
     }
 
     /**
@@ -98,15 +107,35 @@ public abstract class Subscriber extends RunnableSubPub {
     }
 
     /**
-     * The entry point of the Subscriber. TODO: you must complete this code
+     * The entry point of the Subscriber.
      * otherwise you will end up in an infinite loop.
      */
     @Override
     public final void run() {
+        messageBroker.register(this);
+
         initialize();
         while (!terminated) {
-            System.out.println("NOT IMPLEMENTED!!!"); //TODO: you should delete this line :)
+            try {
+                Message message = messageBroker.awaitMessage(this);
+                if (!messageCallbacks.containsKey(message.getClass())) {
+                    continue;
+                }
+
+                // Check if we were requested to terminate between waiting and the
+                // loop condition check before handling the message
+                if (terminated) {
+                    break;
+                }
+
+                // !!! It should be type safe because we only add callbacks with their matching type
+                // (hopefully no one actively 'tricks' the generic subscribe method) !!!
+                ((Callback)messageCallbacks.get(message.getClass())).call(message);
+            } catch (InterruptedException ignored) {
+            }
         }
+
+        messageBroker.unregister(this);
     }
 
 }

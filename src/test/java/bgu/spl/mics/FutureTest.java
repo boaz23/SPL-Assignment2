@@ -35,25 +35,6 @@ public class FutureTest {
 
     @Test
     /*
-    Tests that trying to fetch the result after resolving returns immediately (using the timed get)
-     */
-    public void immediateTimedResolveGet() {
-        assertFalse(future.isDone(), "Done before resolved");
-
-        future.resolve(5);
-        long start = System.currentTimeMillis();
-        Integer result = future.get(50, TimeUnit.MILLISECONDS);
-        long end = System.currentTimeMillis();
-        long duration = end - start;
-
-        // error margin of 1ms
-        assertTrue(0 <= duration && duration <= 1, "Waited before returning the result");
-        assertEquals(5, result, "Different result after resolve");
-        assertTrue(future.isDone(), "Not done after resolve");
-    }
-
-    @Test
-    /*
     Tests that trying to fetch the result blocks the calling thread until future is resolved (using indefinitely blocking get)
      */
     public void blockingGet() {
@@ -73,12 +54,31 @@ public class FutureTest {
         long end = System.currentTimeMillis();
         long duration = end - start;
 
-        // error margin of 2ms
-        assertTrue(20 <= duration && duration <= 22, "Waited too long or too little to get the result");
         assertEquals(7, result, "Different result after resolve");
         assertTrue(future.isDone(), "Not done after resolve");
+        // error margin of 2ms
+        assertTrue(20 <= duration && duration <= 22, "Waited too long or too little to get the result: " + duration + "ms");
 
         Utils.closeThread(resolver);
+    }
+
+    @Test
+    /*
+    Tests that trying to fetch the result after resolving returns immediately (using the timed get)
+     */
+    public void immediateTimedResolveGet() {
+        assertFalse(future.isDone(), "Done before resolved");
+
+        future.resolve(5);
+        long start = System.currentTimeMillis();
+        Integer result = future.get(50, TimeUnit.MILLISECONDS);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+
+        // error margin of 1ms
+        assertTrue(0 <= duration && duration <= 1, "Waited before returning the result");
+        assertEquals(5, result, "Different result after resolve");
+        assertTrue(future.isDone(), "Not done after resolve");
     }
 
     @Test
@@ -104,9 +104,9 @@ public class FutureTest {
         long duration = end - start;
 
         assertEquals(7, result, "Different result after resolve");
-        // error margin of 2ms
-        assertTrue(20 <= duration && duration <= 22, "Waited too long or too little to get the result");
         assertTrue(future.isDone(), "Not done after resolve");
+        // error margin of 2ms
+        assertTrue(20 <= duration && duration <= 22, "Waited too long or too little to get the result: " + duration + "ms");
 
         Utils.closeThread(resolver);
     }
@@ -133,9 +133,9 @@ public class FutureTest {
         long duration = end - start;
 
         assertNull(result, "Got some result despite timeout");
-        // error margin of 2ms
-        assertTrue(30 <= duration && duration <= 32, "Blocked for longer than neeeded");
         assertFalse(future.isDone(), "Done despite timeout");
+        // error margin of 2ms
+        assertTrue(30 <= duration && duration <= 32, "Waited too long or too little: " + duration + "ms");
 
         Utils.closeThread(resolver);
     }

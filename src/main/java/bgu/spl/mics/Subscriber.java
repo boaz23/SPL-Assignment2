@@ -21,7 +21,7 @@ import java.util.Map;
 public abstract class Subscriber extends RunnableSubPub {
     private boolean terminated = false;
     private MessageBroker messageBroker;
-    private Map<Class<? extends Message>, Callback<?>> messageCallbacks;
+    private Map<Class<? extends Message>, Callback<? extends Message>> messageCallbacks;
 
     /**
      * @param name the Subscriber name (used mainly for debugging purposes -
@@ -55,8 +55,10 @@ public abstract class Subscriber extends RunnableSubPub {
      *                 queue.
      */
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
-        messageBroker.subscribeEvent(type, this);
-        messageCallbacks.put(type, callback);
+        if (!messageCallbacks.containsKey(type)) {
+            messageBroker.subscribeEvent(type, this);
+            messageCallbacks.put(type, callback);
+        }
     }
 
     /**
@@ -80,8 +82,10 @@ public abstract class Subscriber extends RunnableSubPub {
      *                 queue.
      */
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
-        messageBroker.subscribeBroadcast(type, this);
-        messageCallbacks.put(type, callback);
+        if (!messageCallbacks.containsKey(type)) {
+            messageBroker.subscribeBroadcast(type, this);
+            messageCallbacks.put(type, callback);
+        }
     }
 
     /**
@@ -118,9 +122,6 @@ public abstract class Subscriber extends RunnableSubPub {
         while (!terminated) {
             try {
                 Message message = messageBroker.awaitMessage(this);
-                if (!messageCallbacks.containsKey(message.getClass())) {
-                    continue;
-                }
 
                 // Check if we were requested to terminate between waiting and the
                 // loop condition check before handling the message

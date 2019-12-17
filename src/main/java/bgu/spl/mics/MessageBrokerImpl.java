@@ -16,6 +16,9 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	private ConcurrentMap<Event<?>, Future<?>> futures;
 
+	/**
+	 * Initializes this message broker instance
+	 */
 	public MessageBrokerImpl() {
 		subscriberQueues = new ConcurrentHashMap<>();
 
@@ -170,6 +173,12 @@ public class MessageBrokerImpl implements MessageBroker {
 		return future;
 	}
 
+	/**
+	 * Puts an item to a blocking queue. The put is tried until it fully completes with interruptions.
+	 * @param queue The queue to put into
+	 * @param e The item to put into the queue
+	 * @param <E> The item's type
+	 */
 	private static <E> void putToBlockingQueue(BlockingQueue<E> queue, E e) {
 		boolean successfulAdd = false;
 		while (!successfulAdd) {

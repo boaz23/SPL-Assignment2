@@ -40,10 +40,20 @@ abstract class RunnableSubPub implements Runnable {
         return simplePublisher;
     }
 
+    /**
+     * Sends an event
+     * @param e The event to send
+     * @param <T> The event's result type
+     * @return A future for the result
+     */
     protected <T> Future<T> sendEvent(Event<T> e) {
         return simplePublisher.sendEvent(e);
     }
 
+    /**
+     * Sends a broadcast
+     * @param b The broadcast to send
+     */
     protected void sendBroadcast(Broadcast b) {
         simplePublisher.sendBroadcast(b);
     }

@@ -21,7 +21,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
 		// TODO: should we use the standard java's library ReentrantReadWriteLock or the one seen in class
 		// the one seen in class favor writers while the other does not
-		eventsLock = new ReadWriteLockImpl();
+		eventsLock = new WriterFavoredReadWriteLock();
 
 		// TODO: should we use a concurrent version of hash map?
 		// TODO: should we use a list or a set?
@@ -75,7 +75,7 @@ public class MessageBrokerImpl implements MessageBroker {
 		try {
 			Queue<Subscriber> subscribers = getMessageSubscribers(e);
 			if (subscribers != null) {
-				return sendEventToSubscribers(e, subscribers);
+				return roundRobinEvent(e, subscribers);
 			}
 
 			return null;
@@ -92,10 +92,11 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	@Override
 	public void unregister(Subscriber m) {
-		subscriberQueues.remove(m);
 		eventsLock.acquireWriteLock();
+		subscriberQueues.remove(m);
 		try {
 			Set<Class<? extends Message>> keys = subscribedEvents.keySet();
+			// TODO: maybe not remove the subscriber from the queue, but skip it when we encounter in while sending events
 			for (Class<? extends Message> key : keys) {
 				Queue<Subscriber> subscribers = subscribedEvents.get(key);
 				subscribers.remove(m);
@@ -150,19 +151,23 @@ public class MessageBrokerImpl implements MessageBroker {
 		}
 	}
 
-	private <T> Future<T> sendEventToSubscribers(Event<T> e, Queue<Subscriber> subscribers) {
+	private <T> Future<T> roundRobinEvent(Event<T> e, Queue<Subscriber> subscribers) {
 		synchronized (subscribedEvents.get(e.getClass())) {
 			Subscriber subscriber = subscribers.poll();
 			if (subscriber == null) {
 				return null;
 			}
 
-			Future<T> future = new Future<>();
-			futures.put(e, future);
-			addMessageToSubscriberQueue(e, subscriber);
-			subscribers.add(subscriber);
-			return future;
+			return handEventToSubscriber(e, subscribers, subscriber);
 		}
+	}
+
+	private <T> Future<T> handEventToSubscriber(Event<T> e, Queue<Subscriber> subscribers, Subscriber subscriber) {
+		Future<T> future = new Future<>();
+		futures.put(e, future);
+		addMessageToSubscriberQueue(e, subscriber);
+		subscribers.add(subscriber);
+		return future;
 	}
 
 	private static <E> void putToBlockingQueue(BlockingQueue<E> queue, E e) {

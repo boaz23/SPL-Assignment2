@@ -1,9 +1,9 @@
 package bgu.spl.mics;
 
-public class ReadWriteLockImpl implements ReadWriteLock {
+public class WriterFavoredReadWriteLock implements ReadWriteLock {
     protected int activeReaders = 0;  // threads executing read
     protected int activeWriters = 0;  // always zero or one
-    protected int waitingReaders = 0; // threads not yet in read_
+    protected int waitingReaders = 0; // threads not yet in read
     protected int waitingWriters = 0; // same for write
 
     public void acquireReadLock() {

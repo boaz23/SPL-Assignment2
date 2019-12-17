@@ -137,7 +137,7 @@ public class MessageBrokerImpl implements MessageBroker {
 			subscribers.add(m);
 		}
 		finally {
-			eventsLock.acquireWriteLock();
+			eventsLock.releaseWriteLock();
 		}
 	}
 

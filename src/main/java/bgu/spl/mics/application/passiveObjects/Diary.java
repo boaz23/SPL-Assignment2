@@ -50,4 +50,11 @@ public class Diary {
 		//TODO: Implement this
 		return 0;
 	}
+
+	/**
+	 * Increments the total number of received missions by 1
+	 */
+	public void incrementTotal(){
+
+	}
 }

@@ -11,6 +11,10 @@ import java.util.concurrent.*;
 public class MessageBrokerImpl implements MessageBroker {
 	private ConcurrentMap<Subscriber, BlockingQueue<Message>> subscriberQueues;
 
+	/**
+	 * Lock for reading/writing to the map itself, not for the inner containers (queues).
+	 * The inner containers should be synchronized independently.
+	 */
 	private ReadWriteLock eventsLock;
 	private Map<Class<? extends Message>, Queue<Subscriber>> subscribedEvents;
 
@@ -23,12 +27,19 @@ public class MessageBrokerImpl implements MessageBroker {
 		subscriberQueues = new ConcurrentHashMap<>();
 
 		// TODO: should we use the standard java's library ReentrantReadWriteLock or the one seen in class
-		// the one seen in class favor writers while the other does not
+		// The one seen in class favor writers while the other does not,
+		// so it seems we should use the variant seen in class
 		eventsLock = new WriterFavoredReadWriteLock();
 
 		// TODO: should we use a concurrent version of hash map?
-		// TODO: should we use a list or a set?
+		// Probably a non-concurrent map, since the access to it is protected by a lock
 		// TODO: should we use a concurrent version of the inner subscribers container?
+		// We should use a concurrent version because we need to synchronizes
+		// access to each one in the round robin
+		// TODO: which container should we use for the inner container?
+		// Concurrent queue seems like a good idea since it's non-blocking, thread safe
+		// and allows easy implementation of the round robin mechanism
+		// (while not hurting sending broadcasts)
 		subscribedEvents = new HashMap<>();
 
 		futures = new ConcurrentHashMap<>();
@@ -90,20 +101,15 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	@Override
 	public void register(Subscriber m) {
-		subscriberQueues.computeIfAbsent(m, s -> new LinkedBlockingQueue<>());
+		subscriberQueues.computeIfAbsent(m, this::createSubscriberMessageQueue);
 	}
 
 	@Override
 	public void unregister(Subscriber m) {
 		eventsLock.acquireWriteLock();
-		subscriberQueues.remove(m);
 		try {
-			Set<Class<? extends Message>> keys = subscribedEvents.keySet();
-			// TODO: maybe not remove the subscriber from the queue, but skip it when we encounter in while sending events
-			for (Class<? extends Message> key : keys) {
-				Queue<Subscriber> subscribers = subscribedEvents.get(key);
-				subscribers.remove(m);
-			}
+			subscriberQueues.remove(m);
+			unsubscribeFromMessages(m);
 		}
 		finally {
 			eventsLock.releaseWriteLock();
@@ -112,18 +118,20 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	@Override
 	public Message awaitMessage(Subscriber m) throws InterruptedException {
-		// Return null if the subscriber doesn't exists
 		BlockingQueue<Message> queue = getSubscriberQueue(m);
-		if (queue != null) {
-			return queue.take();
-		}
+		return queue.take();
+	}
 
-		// TODO: ??? should it even be possible?
-		return null;
+	private BlockingQueue<Message> createSubscriberMessageQueue(Subscriber s) {
+		return new LinkedBlockingQueue<>();
+	}
+
+	private Queue<Subscriber> createContainerForMessageType(Class<? extends Message> c) {
+		return new ConcurrentLinkedQueue<>();
 	}
 
 	private BlockingQueue<Message> getSubscriberQueue(Subscriber m) {
-		return subscriberQueues.getOrDefault(m, null);
+		return subscriberQueues.get(m);
 	}
 
 	private Queue<Subscriber> getMessageSubscribers(Message msg) {
@@ -133,7 +141,7 @@ public class MessageBrokerImpl implements MessageBroker {
 	private <T> void subscribeMessage(Class<? extends Message> type, Subscriber m) {
 		eventsLock.acquireWriteLock();
 		try {
-			Queue<Subscriber> subscribers = subscribedEvents.computeIfAbsent(type, c -> new ConcurrentLinkedQueue<>());
+			Queue<Subscriber> subscribers = subscribedEvents.computeIfAbsent(type, this::createContainerForMessageType);
 			subscribers.add(m);
 		}
 		finally {
@@ -143,34 +151,58 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	private void addMessageToSubscriberQueue(Message msg, Subscriber subscriber) {
 		BlockingQueue<Message> queue = getSubscriberQueue(subscriber);
-		if (queue != null) {
-			putToBlockingQueue(queue, msg);
-		}
+		putToBlockingQueue(queue, msg);
 	}
 
 	private void addBroadcastToSubscriberQueues(Broadcast b, Collection<Subscriber> subscribers) {
+		// No (further) synchronization (beyond the lock for the queues map) is needed,
+		// since after registration, the container doesn't change (for a broadcast message type)
 		for (Subscriber subscriber : subscribers) {
 			addMessageToSubscriberQueue(b, subscriber);
 		}
 	}
 
 	private <T> Future<T> roundRobinEvent(Event<T> e, Queue<Subscriber> subscribers) {
+		// Many threads may try to send an event of this type,
+		// we need to make sure the queue (for this type of message) stays valid
 		synchronized (subscribedEvents.get(e.getClass())) {
 			Subscriber subscriber = subscribers.poll();
 			if (subscriber == null) {
+				// No one is subscribed
 				return null;
 			}
 
-			return handEventToSubscriber(e, subscribers, subscriber);
+			Future<T> future = handEventToSubscriber(e, subscriber);
+			subscribers.add(subscriber);
+			return future;
 		}
 	}
 
-	private <T> Future<T> handEventToSubscriber(Event<T> e, Queue<Subscriber> subscribers, Subscriber subscriber) {
+	private <T> Future<T> handEventToSubscriber(Event<T> e, Subscriber subscriber) {
 		Future<T> future = new Future<>();
 		futures.put(e, future);
 		addMessageToSubscriberQueue(e, subscriber);
-		subscribers.add(subscriber);
 		return future;
+	}
+
+	private void unsubscribeFromMessages(Subscriber m) {
+		Set<Class<? extends Message>> messageTypes = subscribedEvents.keySet();
+		Iterator<Class<? extends Message>> iterator = messageTypes.iterator();
+		unsubscribeFromMessages(m, iterator);
+	}
+
+	private void unsubscribeFromMessages(Subscriber m, Iterator<Class<? extends Message>> iterator) {
+		while (iterator.hasNext()) {
+			Class<? extends Message> msgType = iterator.next();
+			Queue<Subscriber> subscribers = subscribedEvents.get(msgType);
+			subscribers.remove(m);
+
+			// TODO: maybe not remove the subscriber from the queue, but skip it when we encounter in while sending events
+			// Removes the message queue for the type if no one is subscribed to the message
+			if (subscribers.isEmpty()) {
+				iterator.remove();
+			}
+		}
 	}
 
 	/**
@@ -185,8 +217,7 @@ public class MessageBrokerImpl implements MessageBroker {
 			try {
 				queue.put(e);
 				successfulAdd = true;
-			} catch (InterruptedException ex) {
-				ex.printStackTrace();
+			} catch (InterruptedException ignored) {
 			}
 		}
 	}

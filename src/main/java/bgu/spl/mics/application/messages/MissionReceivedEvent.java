@@ -6,7 +6,7 @@ import bgu.spl.mics.application.passiveObjects.MissionInfo;
 /**
  * The event to be sent when a new mission should be issued
  */
-public class MissionReceivedEvent implements Event<MissionInfo> {
+public class MissionReceivedEvent implements Event<Void> {
     private final MissionInfo missionInfo;
 
     /**

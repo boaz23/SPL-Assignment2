@@ -1,12 +1,13 @@
 package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
-import bgu.spl.mics.application.messages.eventArgs.GadgetAvailableEventArgs;
+import bgu.spl.mics.application.messages.eventsInfo.GadgetAvailableEventArgs;
+import bgu.spl.mics.application.messages.eventsInfo.GadgetAvailableResult;
 
 /**
  * The event to be sent when a gadget is need for a mission in order to know whether it's available
  */
-public class GadgetAvailableEvent implements Event<GadgetAvailableEventArgs> {
+public class GadgetAvailableEvent implements Event<GadgetAvailableResult> {
     private final GadgetAvailableEventArgs args;
 
     /**

@@ -133,7 +133,7 @@ public abstract class Subscriber extends RunnableSubPub {
                     break;
                 }
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                hostThread.interrupt();
             }
         }
 

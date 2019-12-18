@@ -1,4 +1,4 @@
-package bgu.spl.mics.application.messages.eventArgs;
+package bgu.spl.mics.application.messages.eventsInfo;
 
 import bgu.spl.mics.application.messages.SendAgentsEvent;
 

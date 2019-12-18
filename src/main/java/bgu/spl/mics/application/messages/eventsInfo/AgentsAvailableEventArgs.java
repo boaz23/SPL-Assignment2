@@ -1,16 +1,15 @@
-package bgu.spl.mics.application.messages.eventArgs;
+package bgu.spl.mics.application.messages.eventsInfo;
 
 import bgu.spl.mics.application.messages.AgentsAvailableEvent;
 
 import java.util.List;
 
 /**
- * The value of
+ * The arguments for
  * @see AgentsAvailableEvent
  */
 public class AgentsAvailableEventArgs {
     private final List<String> agentsSerialNumbers;
-    private boolean areSerialAgentsNumbersValid;
 
     /**
      * Initializes a new instance with the given agents serial numbers which are needed for a mission
@@ -18,21 +17,6 @@ public class AgentsAvailableEventArgs {
      */
     public AgentsAvailableEventArgs(List<String> agentsSerialNumbers) {
         this.agentsSerialNumbers = agentsSerialNumbers;
-    }
-
-    /**
-     * @return Whether acquiring the agents succeeded
-     */
-    public boolean areSerialAgentsNumbersValid() {
-        return areSerialAgentsNumbersValid;
-    }
-
-    /**
-     * Sets whether getting the agents was a valid operation
-     * @param areSerialAgentsNumbersValid The value to set to
-     */
-    public void setAreSerialAgentsNumbersValid(boolean areSerialAgentsNumbersValid) {
-        this.areSerialAgentsNumbersValid = areSerialAgentsNumbersValid;
     }
 
     /**

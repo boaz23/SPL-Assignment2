@@ -1,12 +1,13 @@
 package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
-import bgu.spl.mics.application.messages.eventArgs.AgentsAvailableEventArgs;
+import bgu.spl.mics.application.messages.eventsInfo.AgentsAvailableEventArgs;
+import bgu.spl.mics.application.messages.eventsInfo.AgentsAvailableResult;
 
 /**
  * The event to be sent when Agents are needed to be acquired for a mission
  */
-public class AgentsAvailableEvent implements Event<AgentsAvailableEventArgs> {
+public class AgentsAvailableEvent implements Event<AgentsAvailableResult> {
     private final AgentsAvailableEventArgs args;
 
     /**

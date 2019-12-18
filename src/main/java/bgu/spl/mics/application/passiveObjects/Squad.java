@@ -1,7 +1,11 @@
 package bgu.spl.mics.application.passiveObjects;
+import bgu.spl.mics.MessageBrokerImpl;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Passive data-object representing a information about an agent in MI6.
@@ -17,8 +21,7 @@ public class Squad {
 	 * Retrieves the single instance of this class.
 	 */
 	public static Squad getInstance() {
-		//TODO: Implement this
-		return null;
+		return Squad.InstanceHolder.instance;
 	}
 
 	/**
@@ -28,6 +31,7 @@ public class Squad {
 	 * 						of the squad.
 	 */
 	public void load (Agent[] agents) {
+		this.agents = new ConcurrentHashMap<String, Agent>();
 		for(Agent agent: agents){
 			this.agents.put(agent.getSerialNumber(), agent);
 		}
@@ -35,9 +39,16 @@ public class Squad {
 
 	/**
 	 * Releases agents.
+	 * Sort it, and then release from end to start
 	 */
 	public void releaseAgents(List<String> serials){
-		// TODO Implement this
+		serials.sort(String.CASE_INSENSITIVE_ORDER);
+		for(int i=serials.size()-1; i > -1; i=i-1){
+			Agent agent = agents.getOrDefault(serials.get(i), null);
+			if(agent != null){
+				agent.release();
+			}
+		}
 	}
 
 	/**
@@ -45,8 +56,11 @@ public class Squad {
 	 * @param time   milliseconds to sleep
 	 */
 	public void sendAgents(List<String> serials, int time){
-		//TODO do we need to check if the agents are available
-		// TODO Implement this
+		//TODO check if we need to check if the agents are available
+		try{
+			Thread.sleep(time);
+		} catch (Exception e) {}
+		releaseAgents(serials);
 	}
 
 	/**
@@ -82,5 +96,9 @@ public class Squad {
 
 		return names;
     }
+
+	private static class InstanceHolder {
+		public static final Squad instance = new Squad();
+	}
 
 }

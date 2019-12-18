@@ -62,8 +62,8 @@ public abstract class Subscriber extends RunnableSubPub {
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
         if (!messageCallbacks.containsKey(type)) {
             messageBroker.subscribeEvent(type, this);
-            messageCallbacks.put(type, callback);
         }
+        messageCallbacks.put(type, callback);
     }
 
     /**
@@ -89,8 +89,8 @@ public abstract class Subscriber extends RunnableSubPub {
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
         if (!messageCallbacks.containsKey(type)) {
             messageBroker.subscribeBroadcast(type, this);
-            messageCallbacks.put(type, callback);
         }
+        messageCallbacks.put(type, callback);
     }
 
     /**
@@ -113,7 +113,9 @@ public abstract class Subscriber extends RunnableSubPub {
      */
     protected final void terminate() {
         this.terminated = true;
-        hostThread.interrupt();
+        if (hostThread != null) {
+            hostThread.interrupt();
+        }
     }
 
     /**

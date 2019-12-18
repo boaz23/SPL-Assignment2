@@ -62,8 +62,12 @@ public class MessageBrokerImpl implements MessageBroker {
 		subscribeMessage(type, m);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> void complete(Event<T> e, T result) {
+		// There shouldn't be a problem if context switch happens mid-execution of this method, since:
+		// 1. Only one subscriber is handed the event, therefore only one will complete it.
+		// 2. If a future stays in the map for no reason, no harm can come out of it
 		Future<T> future = (Future<T>)futures.get(e);
 		future.resolve(result);
 		futures.remove(e, future);

@@ -24,6 +24,11 @@ public abstract class Subscriber extends RunnableSubPub {
     private Map<Class<? extends Message>, Callback<? extends Message>> messageCallbacks;
 
     /**
+     * The thread which this instance will run in
+     */
+    private Thread hostThread;
+
+    /**
      * @param name the Subscriber name (used mainly for debugging purposes -
      *             does not have to be unique)
      */
@@ -108,6 +113,7 @@ public abstract class Subscriber extends RunnableSubPub {
      */
     protected final void terminate() {
         this.terminated = true;
+        hostThread.interrupt();
     }
 
     /**
@@ -117,23 +123,15 @@ public abstract class Subscriber extends RunnableSubPub {
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public final void run() {
+        hostThread = Thread.currentThread();
         messageBroker.register(this);
 
         initialize();
         while (!shouldTerminate()) {
             try {
-                Message message = messageBroker.awaitMessage(this);
-
-                // Check if we were requested to terminate between waiting and the
-                // loop condition check before handling the message
-                if (shouldTerminate()) {
+                if (!awaitAndProcessMessage()) {
                     break;
                 }
-
-                // !!! It should be type safe because we only add callbacks with their matching type
-                // (hopefully no one actively 'tricks' the generic subscribe method) !!!
-                Callback callback = messageCallbacks.get(message.getClass());
-                callback.call(message);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -142,7 +140,23 @@ public abstract class Subscriber extends RunnableSubPub {
         messageBroker.unregister(this);
     }
 
+    private boolean awaitAndProcessMessage() throws InterruptedException {
+        Message message = messageBroker.awaitMessage(this);
+
+        // Check if we were requested to terminate between waiting and the
+        // loop condition check before handling the message
+        if (shouldTerminate()) {
+            return false;
+        }
+
+        // !!! It should be type safe because we only add callbacks with their matching type
+        // (hopefully no one actively 'tricks' the generic subscribe method) !!!
+        Callback callback = messageCallbacks.get(message.getClass());
+        callback.call(message);
+        return true;
+    }
+
     private boolean shouldTerminate() {
-        return terminated || Thread.currentThread().isInterrupted();
+        return terminated || hostThread.isInterrupted();
     }
 }

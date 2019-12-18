@@ -1,6 +1,12 @@
 package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.Subscriber;
+import bgu.spl.mics.application.messages.MissionReceivedEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.passiveObjects.MissionInfo;
+
+import javax.print.attribute.IntegerSyntax;
+import java.util.*;
 
 /**
  * A Publisher\Subscriber.
@@ -11,13 +17,31 @@ import bgu.spl.mics.Subscriber;
  */
 public class Intelligence extends Subscriber {
 
-	public Intelligence() {
-		super("Change_This_Name");
-		// TODO Implement this
+	private Map<Integer, LinkedList<MissionInfo>> missionInfos;
+
+	public Intelligence(String name, MissionInfo[] missions) {
+		super(name);
+		missionInfos = new HashMap<>();
+		for(MissionInfo mission : missions){
+			LinkedList<MissionInfo> list =  missionInfos.get(mission.getTimeIssued());
+			list.add(mission);
+		}
 	}
 
 	@Override
 	protected void initialize() {
-		// TODO Implement this
+		subscribeBroadcast(TickBroadcast.class, this::callBack);
+	}
+
+	//TODO check if any other subscriber can alter the mission, if so edit the code to be tread safe
+	private void callBack(TickBroadcast tick){
+		int tickTime = tick.getTick();
+		LinkedList<MissionInfo> list =  missionInfos.getOrDefault(tickTime, null);
+		if(list != null){
+			for (MissionInfo mission: list) {
+				sendEvent(new MissionReceivedEvent(mission));
+			}
+		}
+
 	}
 }

@@ -19,7 +19,7 @@ import java.util.List;
 public class M extends Subscriber {
 	private final int serialNumber;
 	private int lastTick;
-	private Diary diary;
+	private final Diary diary;
 
 	public M(int serialNumber) {
 		super("M" + serialNumber);
@@ -33,7 +33,7 @@ public class M extends Subscriber {
 		subscribeEvent(MissionReceivedEvent.class, this::onMissionReceived);
 	}
 
-	// TODO: the last tick we got may not be updated when we're handling a mission received event.
+	// TODO: the last tick we got may not be updated when we're handling events
 	private void onTimeTick(TickBroadcast b) {
 		lastTick = b.getTick();
 	}
@@ -43,16 +43,14 @@ public class M extends Subscriber {
 		diary.incrementTotal();
 
 		MissionPreparation missionPreparation = checkValidity(missionInfo);
-		if (!missionPreparation.shouldExecute()) {
+		if (missionPreparation.shouldExecute()) {
+			sendAgents(missionInfo.getSerialAgentsNumbers(), missionInfo.getDuration());
+			reportMission(missionInfo, missionPreparation);
+		} else {
 			if (missionPreparation.shouldReleaseAgents()) {
 				releaseAgents(missionInfo.getSerialAgentsNumbers());
 			}
-
-			return;
 		}
-
-		sendAgents(missionInfo.getSerialAgentsNumbers(), missionInfo.getDuration());
-		reportMission(missionInfo, missionPreparation);
 	}
 
 	private MissionPreparation checkValidity(MissionInfo missionInfo) {

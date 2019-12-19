@@ -89,6 +89,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
+		// TODO: what if a subscriber unregisters a split of a second right after we handed it the event? the future will never be completed
 		eventsLock.acquireReadLock();
 		try {
 			Queue<Subscriber> subscribers = getMessageSubscribers(e);

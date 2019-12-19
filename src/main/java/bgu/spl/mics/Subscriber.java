@@ -122,26 +122,25 @@ public abstract class Subscriber extends RunnableSubPub {
      * The entry point of the Subscriber.
      * otherwise you will end up in an infinite loop.
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public final void run() {
         hostThread = Thread.currentThread();
         messageBroker.register(this);
 
         initialize();
-        while (!shouldTerminate()) {
-            try {
+        try {
+            while (!shouldTerminate()) {
                 if (!awaitAndProcessMessage()) {
                     break;
                 }
-            } catch (InterruptedException e) {
-                hostThread.interrupt();
             }
+        } catch (InterruptedException e) {
         }
 
         messageBroker.unregister(this);
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private boolean awaitAndProcessMessage() throws InterruptedException {
         Message message = messageBroker.awaitMessage(this);
 
@@ -153,6 +152,7 @@ public abstract class Subscriber extends RunnableSubPub {
 
         // !!! It should be type safe because we only add callbacks with their matching type
         // (hopefully no one actively 'tricks' the generic subscribe method) !!!
+        // TODO: what if we get interrupted while waiting for a future to complete? we might wait a long time before terminating
         Callback callback = messageCallbacks.get(message.getClass());
         callback.call(message);
         return true;

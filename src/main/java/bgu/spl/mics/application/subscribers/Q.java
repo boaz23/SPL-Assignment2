@@ -35,6 +35,13 @@ public class Q extends Subscriber {
 		lastTick = b.getTick();
 	}
 
+	// TODO: multiple Qs might be trying to get the same gadget
+	/*
+	That may cause some missions not to get executed, for example:
+	One Q retrieves gadget 'A'. The M who handles the mission who needed that gadget might not be executed because of time constraints.
+	Then another Q wants to retrieve that gadget but it's unavailable, so the other mission fails because it doesn't have the gadget.
+	It is possible that if the second Q got the gadget, the second mission would be executed.
+	 */
 	private void onGadgetAvailableEvent(GadgetAvailableEvent gadgetAvailableEvent) {
 		GadgetAvailableEventArgs args = gadgetAvailableEvent.getArgs();
 		boolean isAvailable = inventory.getItem(args.gadget());

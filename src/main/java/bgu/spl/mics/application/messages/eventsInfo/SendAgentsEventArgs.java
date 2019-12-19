@@ -9,11 +9,11 @@ import java.util.List;
  * @see SendAgentsEvent
  */
 public class SendAgentsEventArgs {
-    private List<String> serialAgentsNumbers;
-    private int duration;
+    private final List<String> serialAgentsNumbers;
+    private final int duration;
 
     /**
-     * Initializes a new instance with given serial numbers of agents to sent to a mission and the duration of the mission
+     * Initializes a new instance
      * @param serialAgentsNumbers The serial numbers of agents
      * @param duration The mission duration time
      */

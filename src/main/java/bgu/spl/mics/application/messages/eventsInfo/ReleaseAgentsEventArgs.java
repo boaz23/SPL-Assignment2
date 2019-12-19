@@ -9,10 +9,10 @@ import java.util.List;
  * @see ReleaseAgentsEvent
  */
 public class ReleaseAgentsEventArgs {
-    private List<String> serialAgentsNumbers;
+    private final List<String> serialAgentsNumbers;
 
     /**
-     * Initializes a new instance with the given serial numbers of agents requested to be released
+     * Initializes a new instance
      * @param serialAgentsNumbers The serial numbers of the agents
      */
     public ReleaseAgentsEventArgs(List<String> serialAgentsNumbers) {

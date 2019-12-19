@@ -12,7 +12,7 @@ public class AgentsAvailableEventArgs {
     private final List<String> agentsSerialNumbers;
 
     /**
-     * Initializes a new instance with the given agents serial numbers which are needed for a mission
+     * Initializes a new instance
      * @param agentsSerialNumbers The agents serial numbers
      */
     public AgentsAvailableEventArgs(List<String> agentsSerialNumbers) {
@@ -22,7 +22,7 @@ public class AgentsAvailableEventArgs {
     /**
      * @return The list of agents needed for the mission
      */
-    public List<String> getAgentsSerialNumbers() {
+    public List<String> agentsSerialNumbers() {
         return agentsSerialNumbers;
     }
 }

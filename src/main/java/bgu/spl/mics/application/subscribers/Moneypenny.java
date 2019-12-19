@@ -28,7 +28,7 @@ public class Moneypenny extends Subscriber {
 	}
 
 	private void callBack(AgentsAvailableEvent aAE){
-		List<String> agents = aAE.getArgs().getAgentsSerialNumbers();
+		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		while(! squad.getAgents(agents)) {}
 	}
 

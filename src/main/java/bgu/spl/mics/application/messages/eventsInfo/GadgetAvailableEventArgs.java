@@ -10,8 +10,8 @@ public class GadgetAvailableEventArgs {
     private final String gadget;
 
     /**
-     * Initializes a new instance with a given gadget needed for a mission
-     * @param gadget
+     * Initializes a new instance
+     * @param gadget The given gadget needed for a mission
      */
     public GadgetAvailableEventArgs(String gadget) {
         this.gadget = gadget;
@@ -20,7 +20,7 @@ public class GadgetAvailableEventArgs {
     /**
      * @return The gadget needed for a mission
      */
-    public String getGadget() {
+    public String gadget() {
         return gadget;
     }
 }

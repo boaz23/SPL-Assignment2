@@ -46,8 +46,7 @@ public class Inventory {
      * @return 	‘false’ if the gadget is missing, and ‘true’ otherwise
      */
 	public boolean getItem(String gadget){
-		// TODO: remove the gadget too
-		return gadgets.contains(gadget);
+		return gadgets.remove(gadget);
 	}
 
 	/**

@@ -1,13 +1,17 @@
 package bgu.spl.mics.application.subscribers;
 
+import bgu.spl.mics.Event;
 import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.AgentsAvailableEvent;;
 import bgu.spl.mics.application.messages.LastTickBroadcast;
 import bgu.spl.mics.application.messages.ReleaseAgentsEvent;
 import bgu.spl.mics.application.messages.SendAgentsEvent;
 import bgu.spl.mics.application.messages.eventsInfo.AgentsAvailableResult;
+import bgu.spl.mics.application.messages.eventsInfo.ReleaseAgentsEventArgs;
+import bgu.spl.mics.application.messages.eventsInfo.SendAgentsEventArgs;
 import bgu.spl.mics.application.passiveObjects.Squad;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -55,17 +59,26 @@ public class Moneypenny extends Subscriber {
 	private void agentsAvailableCallback(AgentsAvailableEvent aAE){
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		boolean agentsExist = squad.getAgents(agents);
-		// TODO: get the names of the agents, not their serial number
-		AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist, agents, id);
+
+		AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist,
+				squad.getAgentsNames(agents), id);
 		complete(aAE, agentsAvailableResult);
 	}
 
 	private void sendAgentsCallback(SendAgentsEvent sendAgentsEvent){
-		//TODO implement
+		//TODO check if we can edit the code to make sendAgents not blocking for this instance
+		SendAgentsEventArgs sendAgentsEventArgs = sendAgentsEvent.getArgs();
+		squad.sendAgents(sendAgentsEventArgs.serialAgentsNumbers(),
+				sendAgentsEventArgs.duration());
+		//TODO edit the null in the complete function
+		complete(sendAgentsEvent, null);
 	}
 
 	private void releaseAgentsCallback(ReleaseAgentsEvent releaseAgentsEvent){
-		//TODO implement
+		ReleaseAgentsEventArgs releaseAgentsEventArgs = releaseAgentsEvent.getArgs();
+		squad.releaseAgents(releaseAgentsEventArgs.serialAgentsNumbers());
+		//TODO edit the null in the complete function
+		complete(releaseAgentsEvent, null);
 	}
 
 	private void lastTickBroadcastCallback(LastTickBroadcast lastTickBroadcast){

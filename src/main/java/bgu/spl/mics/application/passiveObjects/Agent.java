@@ -13,11 +13,10 @@ public class Agent {
 	private String serialNumber;
 	private String name;
 
-	// TODO: change to normal boolean
-	private AtomicBoolean available;
+	private boolean available;
 
 	public Agent(){
-		available.set(true);
+		available = true;
 	}
 	/**
 	 * Sets the serial number of an agent.
@@ -57,7 +56,7 @@ public class Agent {
      * @return if the agent is available.
      */
 	public boolean isAvailable() {
-		return available.get();
+		return available;
 	}
 
 	/**
@@ -66,10 +65,10 @@ public class Agent {
 	public synchronized void acquire() {
 		while (true) {
 			try {
-				while (!available.get()) {
+				while (!available) {
 					wait();
 				}
-				available.set(false);
+				available = false;
 				break;
 			} catch (InterruptedException e) { }
 		}
@@ -78,7 +77,7 @@ public class Agent {
 	 * Releases an agent.
 	 */
 	public synchronized void release(){
-		available.set(true);
+		available = true;
 		notifyAll();
 	}
 }

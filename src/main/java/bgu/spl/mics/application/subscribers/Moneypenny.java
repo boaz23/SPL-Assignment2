@@ -55,6 +55,7 @@ public class Moneypenny extends Subscriber {
 	private void agentsAvailableCallback(AgentsAvailableEvent aAE){
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		boolean agentsExist = squad.getAgents(agents);
+		// TODO: get the names of the agents, not their serial number
 		AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist, agents, id);
 		complete(aAE, agentsAvailableResult);
 	}

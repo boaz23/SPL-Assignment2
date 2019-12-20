@@ -9,6 +9,7 @@ import java.util.concurrent.*;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBrokerImpl implements MessageBroker {
+	// TODO: on unregister, resolve all events with null
 	private ConcurrentMap<Subscriber, BlockingQueue<Message>> subscriberQueues;
 
 	/**
@@ -26,20 +27,17 @@ public class MessageBrokerImpl implements MessageBroker {
 	public MessageBrokerImpl() {
 		subscriberQueues = new ConcurrentHashMap<>();
 
-		// TODO: should we use the standard java's library ReentrantReadWriteLock or the one seen in class
-		// The one seen in class favor writers while the other does not,
+		// We should use the read/write lock seen in class rather than the java's library ReentrantReadWriteLock
+		// because the one seen in class favor writers while the other does not,
 		// so it seems we should use the variant seen in class
 		eventsLock = new WriterFavoredReadWriteLock();
 
-		// TODO: should we use a concurrent version of hash map?
-		// Probably a non-concurrent map, since the access to it is protected by a lock
-		// TODO: should we use a concurrent version of the inner subscribers container?
+		// We should use a non-concurrent map, since the access to it is protected by a lock.
 		// We should use a concurrent version because we need to synchronizes
-		// access to each one in the round robin
-		// TODO: which container should we use for the inner container?
+		// access to each one in the round robin.
 		// Concurrent queue seems like a good idea since it's non-blocking, thread safe
 		// and allows easy implementation of the round robin mechanism
-		// (while not hurting sending broadcasts)
+		// (while not hurting sending broadcasts).
 		subscribedEvents = new HashMap<>();
 
 		futures = new ConcurrentHashMap<>();

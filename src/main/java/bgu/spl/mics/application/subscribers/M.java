@@ -54,6 +54,8 @@ public class M extends Subscriber {
 	}
 
 	private MissionPreparation checkValidity(MissionInfo missionInfo) {
+		// TODO: the subscriber who handles the events we send might unregister later on and we will get stuck with a future that will never be resolved
+		// TODO: handle null future and null future.get() return values
 		MissionPreparation missionPreparation = new MissionPreparation();
 
 		List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();

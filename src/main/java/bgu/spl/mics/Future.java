@@ -88,6 +88,7 @@ public class Future<T> {
     }
 
     private T waitAndReturn() {
+        // TODO: return null when interrupted
         synchronized (this) {
             while (!isDone) {
                 try {

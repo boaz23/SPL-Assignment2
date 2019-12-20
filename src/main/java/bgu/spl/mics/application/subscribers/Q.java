@@ -43,6 +43,7 @@ public class Q extends Subscriber {
 	It is possible that if the second Q got the gadget, the second mission would be executed.
 	 */
 	private void onGadgetAvailableEvent(GadgetAvailableEvent gadgetAvailableEvent) {
+		// TODO: handle null future and null future.get() return values
 		GadgetAvailableEventArgs args = gadgetAvailableEvent.getArgs();
 		boolean isAvailable = inventory.getItem(args.gadget());
 		GadgetAvailableResult result = new GadgetAvailableResult(isAvailable, lastTick, serialNumber);

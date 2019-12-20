@@ -2,6 +2,10 @@ package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.AgentsAvailableEvent;;
+import bgu.spl.mics.application.messages.LastTickBroadcast;
+import bgu.spl.mics.application.messages.ReleaseAgentsEvent;
+import bgu.spl.mics.application.messages.SendAgentsEvent;
+import bgu.spl.mics.application.messages.eventsInfo.AgentsAvailableResult;
 import bgu.spl.mics.application.passiveObjects.Squad;
 
 import java.util.List;
@@ -14,28 +18,55 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Moneypenny extends Subscriber {
-	// TODO: have moneypenny available to send agents at all times to execute missions. see https://www.cs.bgu.ac.il/~spl201/index.php?page=Assignments.Assignment_2Forum&action=show-thread&id=80cb06ba55a76335ff907450a401c1974
-	// TODO: add constructor with a parameter telling this instance whether to subscribe to AgentsAvailable xor to both Send and Release agents events
+
+	public enum SubscribeTO {AgentsAvailable, SendAndRelease}
 
 	private Squad squad;
-	//TODO check the serial
-	// TODO: add serial number as field
-	public Moneypenny(int id) {
+	private int id;
+	private SubscribeTO subscribeTo;
+	public Moneypenny(int id, SubscribeTO subscribeTo) {
 		super(""+id);
+		this.id = id;
+		this.subscribeTo = subscribeTo;
 		squad = Squad.getInstance();
 	}
 
+	/**
+	 * Initialize the class , use the {@link SubscribeTO} which event
+	 * to listen.
+	 */
 	@Override
 	protected void initialize() {
-		// TODO: handle last tick
-		// TODO: handle release/send agents events
-		subscribeEvent(AgentsAvailableEvent.class, this::callBack);
+		subscribeBroadcast(LastTickBroadcast.class, this::lastTickBroadcastCallback);
+		if(subscribeTo == SubscribeTO.AgentsAvailable) {
+			subscribeEvent(AgentsAvailableEvent.class, this::agentsAvailableCallback);
+		} else if(subscribeTo == SubscribeTO.SendAndRelease) {
+			subscribeEvent(SendAgentsEvent.class, this::sendAgentsCallback);
+			subscribeEvent(ReleaseAgentsEvent.class, this::releaseAgentsCallback);
+		}
 	}
 
-	private void callBack(AgentsAvailableEvent aAE){
-		// TODO: call getAgents once and then complete (since we will wait for eveyone to be acquired)
+	/**
+	 * CallBack function to handle the AgentAvaibleEvent
+	 * @param aAE AgentsAvailableEvent
+	 */
+	private void agentsAvailableCallback(AgentsAvailableEvent aAE){
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
-		while(! squad.getAgents(agents)) {}
+		boolean agentsExist = squad.getAgents(agents);
+		AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist, agents, id);
+		complete(aAE, agentsAvailableResult);
+	}
+
+	private void sendAgentsCallback(SendAgentsEvent sendAgentsEvent){
+		//TODO implement
+	}
+
+	private void releaseAgentsCallback(ReleaseAgentsEvent releaseAgentsEvent){
+		//TODO implement
+	}
+
+	private void lastTickBroadcastCallback(LastTickBroadcast lastTickBroadcast){
+		terminate();
 	}
 
 }

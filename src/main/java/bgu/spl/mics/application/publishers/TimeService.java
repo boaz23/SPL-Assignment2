@@ -31,4 +31,12 @@ public class TimeService extends Publisher {
 		// TODO Implement this
 	}
 
+	/**
+	 * Return the time tick duration
+	 * @return time tick duration
+	 */
+	public static int getTimeTickDuration(){
+		return 100;
+	}
+
 }

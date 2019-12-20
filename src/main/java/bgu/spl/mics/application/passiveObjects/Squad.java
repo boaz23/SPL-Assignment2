@@ -1,11 +1,12 @@
 package bgu.spl.mics.application.passiveObjects;
 import bgu.spl.mics.MessageBrokerImpl;
+import bgu.spl.mics.application.publishers.TimeService;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+
 
 /**
  * Passive data-object representing a information about an agent in MI6.
@@ -31,7 +32,7 @@ public class Squad {
 	 * 						of the squad.
 	 */
 	public void load (Agent[] agents) {
-		this.agents = new ConcurrentHashMap<String, Agent>();
+		this.agents = new HashMap<String, Agent>();
 		for(Agent agent: agents){
 			this.agents.put(agent.getSerialNumber(), agent);
 		}
@@ -56,10 +57,10 @@ public class Squad {
 	 * @param time   milliseconds to sleep
 	 */
 	public void sendAgents(List<String> serials, int time){
-		//TODO check if we need to check if the agents are available
+		int timeTickDuration = TimeService.getTimeTickDuration();
+
 		try{
-			// TODO: sleep for time*(ms in tick)
-			Thread.sleep(time);
+			Thread.sleep(time*timeTickDuration);
 		} catch (Exception e) {}
 		releaseAgents(serials);
 	}
@@ -70,16 +71,16 @@ public class Squad {
 	 * @return ‘false’ if an agent of serialNumber ‘serial’ is missing, and ‘true’ otherwise
 	 */
 	public boolean getAgents(List<String> serials){
-		// TODO: check that everyone exists before acquiring
 		boolean allExist = true;
-		serials.sort(String.CASE_INSENSITIVE_ORDER);
-		for(String serial: serials){
-			Agent agent = agents.getOrDefault(serial, null);
-			if(agent == null){
-				allExist = false;
-				break;
+
+		allExist = checkAllExist(serials);
+
+		if(allExist) {
+			serials.sort(String.CASE_INSENSITIVE_ORDER);
+			for (String serial : serials) {
+				Agent agent = agents.get(serial);
+				agent.acquire();
 			}
-			agent.acquire();
 		}
 
 		return allExist;
@@ -101,6 +102,25 @@ public class Squad {
 
 	private static class InstanceHolder {
 		public static final Squad instance = new Squad();
+	}
+
+	/**
+	 * Check if all agents are exist according to the serials
+	 * @param serials list of serials for the agents
+	 * @return true if all serials are exist
+	 */
+	private boolean checkAllExist(List<String> serials){
+		boolean allExist = true;
+
+		for(String serial: serials){
+			Agent agent = agents.getOrDefault(serial, null);
+			if(agent == null){
+				allExist = false;
+				break;
+			}
+		}
+
+		return allExist;
 	}
 
 }

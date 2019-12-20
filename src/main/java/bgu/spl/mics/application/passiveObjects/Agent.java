@@ -10,10 +10,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Agent {
 
-	//TODO AtomicBoolean and reference
 	private String serialNumber;
 	private String name;
 	private AtomicBoolean available;
+
+	public Agent(){
+		available.set(true);
+	}
 	/**
 	 * Sets the serial number of an agent.
 	 */
@@ -58,15 +61,22 @@ public class Agent {
 	/**
 	 * Acquires an agent.
 	 */
-	public void acquire(){
-		while(!available.compareAndSet(true, false));
+	public synchronized void acquire() {
+		while (true) {
+			try {
+				while (!available.get()) {
+					wait();
+				}
+				available.set(false);
+				break;
+			} catch (Exception e) { }
+		}
 	}
-
-	// TODO: use wait/notify
 	/**
 	 * Releases an agent.
 	 */
-	public void release(){
+	public synchronized void release(){
 		available.set(true);
+		notifyAll();
 	}
 }

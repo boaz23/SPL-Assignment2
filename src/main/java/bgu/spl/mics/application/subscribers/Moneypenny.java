@@ -24,8 +24,9 @@ public class Moneypenny extends Subscriber {
 	private Squad squad;
 	private int id;
 	private SubscribeTO subscribeTo;
+
 	public Moneypenny(int id, SubscribeTO subscribeTo) {
-		super(""+id);
+		super("Moneypenny: "+id);
 		this.id = id;
 		this.subscribeTo = subscribeTo;
 		squad = Squad.getInstance();

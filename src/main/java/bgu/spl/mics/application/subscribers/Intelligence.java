@@ -19,6 +19,7 @@ import java.util.*;
 public class Intelligence extends Subscriber {
 
 	private Map<Integer, LinkedList<MissionInfo>> missionInfos;
+
 	public Intelligence(String name, MissionInfo[] missions) {
 		super(name);
 		missionInfos = new HashMap<>();

@@ -69,7 +69,7 @@ public class Agent {
 				}
 				available.set(false);
 				break;
-			} catch (Exception e) { }
+			} catch (InterruptedException e) { }
 		}
 	}
 	/**

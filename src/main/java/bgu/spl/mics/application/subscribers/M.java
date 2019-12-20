@@ -50,6 +50,9 @@ public class M extends Subscriber {
 		diary.incrementTotal();
 
 		MissionPreparation missionPreparation = checkValidity(missionInfo);
+		if (Thread.currentThread().isInterrupted()) {
+			missionPreparation.setStatus(ActionStatus.Terminate);
+		}
 		switch (missionPreparation.getStatus()) {
 			case Terminate:
 				terminate();
@@ -74,6 +77,11 @@ public class M extends Subscriber {
 		};
 
 		for (MissionPreparationNeedProvider<?> missionNeed : missionNeeds) {
+			if (Thread.currentThread().isInterrupted()) {
+				missionPreparation.setStatus(ActionStatus.Terminate);
+				return missionPreparation;
+			}
+
 			if (!missionNeed.tryFulfillNeed()) {
 				// Abort the mission because one of the mission prerequisite failed to be fulfilled
 				return missionPreparation;

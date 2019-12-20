@@ -88,14 +88,17 @@ public class Future<T> {
     }
 
     private T waitAndReturn() {
-        // TODO: return null when interrupted
         synchronized (this) {
-            while (!isDone) {
-                try {
+            T result = null;
+            try {
+                while (shouldWait()) {
                     wait();
-                } catch (InterruptedException ignored) {
+                }
+                if (isDone) {
+                    result = this.result;
                 }
             }
+            catch (InterruptedException ignored) { }
 
             return result;
         }
@@ -105,20 +108,25 @@ public class Future<T> {
         TimeUnit unit = TimeUnit.NANOSECONDS;
         long startTime = 0;
         synchronized (this) {
-            while (!isDone && timeout > 0) {
-                try {
+            T result = null;
+            try {
+                while (shouldWait() && timeout > 0) {
                     startTime = System.nanoTime();
                     unit.timedWait(this, timeout);
-                } catch (InterruptedException ignored) {
+                    timeout -= (System.nanoTime() - startTime);
                 }
-                timeout -= (System.nanoTime() - startTime);
+                if (isDone) {
+                    result = this.result;
+                }
             }
-
-            if (timeout <= 0 && !isDone) {
-                return null;
+            catch (InterruptedException ignored) {
             }
 
             return result;
         }
+    }
+
+    private boolean shouldWait() {
+        return !isDone && !Thread.currentThread().isInterrupted();
     }
 }

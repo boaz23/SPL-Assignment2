@@ -17,6 +17,8 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class M extends Subscriber {
+	private static final int MAX_MISSION_NEED_TRIES = 3;
+
 	private final int serialNumber;
 	private int lastTick;
 	private final Diary diary;
@@ -29,12 +31,16 @@ public class M extends Subscriber {
 
 	@Override
 	protected void initialize() {
-		// TODO: handle last tick
+		subscribeBroadcast(LastTickBroadcast.class, this::onLastTimeTick);
 		subscribeBroadcast(TickBroadcast.class, this::onTimeTick);
 		subscribeEvent(MissionReceivedEvent.class, this::onMissionReceived);
 	}
 
-	// TODO: the last tick we got may not be updated when we're handling events
+	private void onLastTimeTick(LastTickBroadcast b) {
+		onTimeTick(b);
+		terminate();
+	}
+
 	private void onTimeTick(TickBroadcast b) {
 		lastTick = b.getTick();
 	}
@@ -44,62 +50,44 @@ public class M extends Subscriber {
 		diary.incrementTotal();
 
 		MissionPreparation missionPreparation = checkValidity(missionInfo);
-		if (missionPreparation.shouldExecute()) {
-			sendAgents(missionInfo.getSerialAgentsNumbers(), missionInfo.getDuration());
-			reportMission(missionInfo, missionPreparation);
-		} else {
-			if (missionPreparation.shouldReleaseAgents()) {
-				releaseAgents(missionInfo.getSerialAgentsNumbers());
-			}
+		switch (missionPreparation.getStatus()) {
+			case Terminate:
+				terminate();
+				break;
+			case Execute:
+				sendAgents(missionInfo.getSerialAgentsNumbers(), missionInfo.getDuration());
+				reportMission(missionInfo, missionPreparation);
+				break;
+			case Abort:
+				if (missionPreparation.shouldReleaseAgents()) {
+					releaseAgents(missionInfo.getSerialAgentsNumbers());
+				}
+				break;
 		}
 	}
 
 	private MissionPreparation checkValidity(MissionInfo missionInfo) {
-		// TODO: the subscriber who handles the events we send might unregister later on and we will get stuck with a future that will never be resolved
-		// TODO: handle null future and null future.get() return values
 		MissionPreparation missionPreparation = new MissionPreparation();
+		MissionPreparationNeedProvider<?>[] missionNeeds = new MissionPreparationNeedProvider<?>[] {
+			new AgentsNeedProvider(missionInfo, missionPreparation),
+			new GadgetNeedProvider(missionInfo, missionPreparation),
+		};
 
-		List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();
-		AgentsAvailableResult agentsAvailableResult = areAgentsValid(agentsSerialNumbers);
-		missionPreparation.setAgentsAvailableResult(agentsAvailableResult);
-		if (!missionPreparation.areSerialAgentsNumbersValid()) {
-			// TODO: what are we supposed to do?
-			// Abort the mission because it's invalid?
-			return missionPreparation;
-		}
-
-		missionPreparation.setShouldReleaseAgents(true);
-		GadgetAvailableResult gadgetAvailableResult = isGadgetAvailable(missionInfo.getGadget());
-		missionPreparation.setGadgetAvailableResult(gadgetAvailableResult);
-		if (!missionPreparation.isGadgetAvailable()) {
-			// TODO: what are we supposed to do?
-			// Abort the mission because it's invalid?
-			return missionPreparation;
+		for (MissionPreparationNeedProvider<?> missionNeed : missionNeeds) {
+			if (!missionNeed.tryFulfillNeed()) {
+				// Abort the mission because one of the mission prerequisite failed to be fulfilled
+				return missionPreparation;
+			}
 		}
 
 		if (lastTick > missionInfo.getTimeExpired()) {
+			// Mission time's expired
 			return missionPreparation;
 		}
 
 		missionPreparation.setShouldReleaseAgents(false);
-		missionPreparation.setShouldExecute(true);
+		missionPreparation.setStatus(ActionStatus.Execute);
 		return missionPreparation;
-	}
-
-	private AgentsAvailableResult areAgentsValid(List<String> agentsSerialNumbers) {
-		return sendAgentsAvailableEvent(agentsSerialNumbers).get();
-	}
-
-	private Future<AgentsAvailableResult> sendAgentsAvailableEvent(List<String> agentsSerialNumbers) {
-		return sendEvent(new AgentsAvailableEvent(new AgentsAvailableEventArgs(agentsSerialNumbers)));
-	}
-
-	private GadgetAvailableResult isGadgetAvailable(String gadget) {
-		return sendGadgetAvailableEvent(gadget).get();
-	}
-
-	private Future<GadgetAvailableResult> sendGadgetAvailableEvent(String gadget) {
-		return sendEvent(new GadgetAvailableEvent(new GadgetAvailableEventArgs(gadget)));
 	}
 
 	private void releaseAgents(List<String> agentsSerialNumbers) {
@@ -125,11 +113,132 @@ public class M extends Subscriber {
 		diary.addReport(missionReport);
 	}
 
+	private class AgentsNeedProvider extends MissionPreparationNeedProvider<AgentsAvailableResult> {
+		protected AgentsNeedProvider(MissionInfo missionInfo, MissionPreparation missionPreparation) {
+			super(missionInfo, missionPreparation);
+		}
+
+		@Override
+		protected Future<AgentsAvailableResult> seekNeedInformation() {
+			List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();
+			return sendEvent(new AgentsAvailableEvent(new AgentsAvailableEventArgs(agentsSerialNumbers)));
+		}
+
+		@Override
+		protected void setInfo(AgentsAvailableResult result) {
+			missionPreparation.setAgentsAvailableResult(result);
+		}
+
+		@Override
+		protected boolean hasBeenFulfilled() {
+			boolean valid = missionPreparation.areSerialAgentsNumbersValid();
+			if (valid) {
+				missionPreparation.setShouldReleaseAgents(true);
+			}
+
+			return valid;
+		}
+	}
+
+	private class GadgetNeedProvider extends MissionPreparationNeedProvider<GadgetAvailableResult> {
+		protected GadgetNeedProvider(MissionInfo missionInfo, MissionPreparation missionPreparation) {
+			super(missionInfo, missionPreparation);
+		}
+
+		@Override
+		protected Future<GadgetAvailableResult> seekNeedInformation() {
+			String gadget = missionInfo.getGadget();
+			return sendEvent(new GadgetAvailableEvent(new GadgetAvailableEventArgs(gadget)));
+		}
+
+		@Override
+		protected void setInfo(GadgetAvailableResult result) {
+			missionPreparation.setGadgetAvailableResult(result);
+		}
+
+		@Override
+		protected boolean hasBeenFulfilled() {
+			return missionPreparation.isGadgetAvailable();
+		}
+	}
+
+	private abstract static class MissionPreparationNeedProvider<T> {
+		/**
+		 * Provides data for sending events
+		 */
+		protected final MissionInfo missionInfo;
+
+		/**
+		 * The mission preparation instance this provider fills with information
+		 */
+		protected final MissionPreparation missionPreparation;
+
+		/**
+		 * Initialize a new instance with the given mission information and preparation instances
+		 * @param missionInfo The mission information
+		 * @param missionPreparation The mission preparation
+		 */
+		protected MissionPreparationNeedProvider(MissionInfo missionInfo, MissionPreparation missionPreparation) {
+			this.missionInfo = missionInfo;
+			this.missionPreparation = missionPreparation;
+		}
+
+		/**
+		 * Tries to send events to check a prerequisite of the mission
+		 * @return Whether the need has been fulfilled and M can continue fulfilling the rest of the prerequisites
+		 */
+		public boolean tryFulfillNeed() {
+			T result = sendNeedFulfillRequest();
+			if (result == null) {
+				missionPreparation.setStatus(ActionStatus.Terminate);
+				return false;
+			}
+			setInfo(result);
+			return hasBeenFulfilled();
+		}
+
+		/**
+		 * Send event to get the information from other objects
+		 * @return The future for this information
+		 */
+		protected abstract Future<T> seekNeedInformation();
+
+		/**
+		 * Update the mission preparation object with newly received information
+		 * @param result The information
+		 */
+		protected abstract void setInfo(T result);
+
+		/**
+		 * @return Whether the prerequisite of this instance has been fulfilled
+		 */
+		protected abstract boolean hasBeenFulfilled();
+
+		private T sendNeedFulfillRequest() {
+			T result = null;
+			for (int i = 0; i < MAX_MISSION_NEED_TRIES; ++i) {
+				Future<T> future = seekNeedInformation();
+				if (future != null) {
+					result = future.get();
+					break;
+				}
+			}
+
+			return result;
+		}
+	}
+
+	private enum ActionStatus {
+		Abort,
+		Execute,
+		Terminate
+	}
+
 	private static class MissionPreparation {
 		private AgentsAvailableResult agentsAvailableResult;
 		private GadgetAvailableResult gadgetAvailableResult;
 		private boolean shouldReleaseAgents;
-		private boolean shouldExecute;
+		private ActionStatus status;
 
 		/**
 		 * Initializes a new mission preparation instance
@@ -138,7 +247,7 @@ public class M extends Subscriber {
 			this.agentsAvailableResult = null;
 			this.gadgetAvailableResult = null;
 			shouldReleaseAgents = false;
-			shouldExecute = false;
+			status = ActionStatus.Abort;
 		}
 
 		/**
@@ -215,18 +324,18 @@ public class M extends Subscriber {
 		}
 
 		/**
-		 * @return Whether the mission should be executed
+		 * @return The status of the mission
 		 */
-		public boolean shouldExecute() {
-			return shouldExecute;
+		public ActionStatus getStatus() {
+			return status;
 		}
 
 		/**
-		 * Sets whether the mission should be executed
-		 * @param shouldExecute The value to set to
+		 * Sets the status of the mission
+		 * @param status The value to set to
 		 */
-		public void setShouldExecute(boolean shouldExecute) {
-			this.shouldExecute = shouldExecute;
+		public void setStatus(ActionStatus status) {
+			this.status = status;
 		}
 	}
 }

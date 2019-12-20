@@ -19,25 +19,25 @@ import java.util.TimerTask;
 public class TimeService extends Publisher {
 
 	private static final int time = 100;
-	private int duraction;
+	private int duration;
 	private int tick;
-	private Timer timer;
-	private Object notify;
+	private final Object notify;
 
-	public TimeService(int duraction, String name) {
+	public TimeService(int duration, String name) {
 		super(name);
-		this.duraction = duraction;
-	}
-
-	@Override
-	protected void initialize() {
-		tick = 1;
-		timer = new Timer();
+		this.duration = duration;
 		notify = new Object();
 	}
 
 	@Override
+	protected void initialize() {
+		// This method will never be called...
+	}
+
+	@Override
 	public void run() {
+		tick = 1;
+		Timer timer = new Timer();
 		TimerTask timerTask = new TimeTickSchedule();
 		timer.schedule(timerTask, time, time);
 
@@ -48,7 +48,7 @@ public class TimeService extends Publisher {
 				timer.cancel();
 				timer.purge();
 			}
-		} catch (InterruptedException e) {}
+		} catch (InterruptedException ignored) {}
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class TimeService extends Publisher {
 
 		@Override
 		public void run() {
-			if(tick != duraction){
+			if(tick != duration){
 				TickBroadcast tickBroadcast = new TickBroadcast(tick);
 				sendBroadcast(tickBroadcast);
 				tick = tick +1;

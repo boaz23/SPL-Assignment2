@@ -18,6 +18,7 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Moneypenny extends Subscriber {
+	// TODO: how should moneypenny know to terminate herself? she might be acquiring, releasing or sending agents and the last tick message might be a long way into the message queue
 
 	public enum SubscribeTO {AgentsAvailable, SendAndRelease}
 

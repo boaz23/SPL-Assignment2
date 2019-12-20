@@ -6,7 +6,6 @@ import bgu.spl.mics.application.messages.MissionReceivedEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
 
-import javax.print.attribute.IntegerSyntax;
 import java.util.*;
 
 /**
@@ -34,12 +33,11 @@ public class Intelligence extends Subscriber {
 
 	@Override
 	protected void initialize() {
-		subscribeBroadcast(TickBroadcast.class, this::TickBrodcastcallBack);
+		subscribeBroadcast(TickBroadcast.class, this::TickBroadcastCallBack);
 		subscribeBroadcast(LastTickBroadcast.class, this::lastTickBroadcast);
 	}
 
-	//TODO check if any other subscriber can alter the mission, if so edit the code to be tread safe
-	private void TickBrodcastcallBack(TickBroadcast tick){
+	private void TickBroadcastCallBack(TickBroadcast tick){
 		int tickTime = tick.getTick();
 		LinkedList<MissionInfo> list =  missionInfos.getOrDefault(tickTime, null);
 		if(list != null){

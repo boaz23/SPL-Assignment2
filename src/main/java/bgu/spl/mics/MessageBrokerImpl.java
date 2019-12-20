@@ -9,7 +9,6 @@ import java.util.concurrent.*;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBrokerImpl implements MessageBroker {
-	// TODO: on unregister, resolve all events with null
 	private ConcurrentMap<Subscriber, BlockingQueue<Message>> subscriberQueues;
 
 	/**
@@ -87,7 +86,6 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
-		// TODO: what if a subscriber unregisters a split of a second right after we handed it the event? the future will never be completed
 		eventsLock.acquireReadLock();
 		try {
 			Queue<Subscriber> subscribers = getMessageSubscribers(e);
@@ -109,14 +107,8 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	@Override
 	public void unregister(Subscriber m) {
-		eventsLock.acquireWriteLock();
-		try {
-			subscriberQueues.remove(m);
-			unsubscribeFromMessages(m);
-		}
-		finally {
-			eventsLock.releaseWriteLock();
-		}
+		BlockingQueue<Message> subscriberMsgQueue = removeSubscriber(m);
+		completeFutures(subscriberMsgQueue);
 	}
 
 	@Override
@@ -222,6 +214,29 @@ public class MessageBrokerImpl implements MessageBroker {
 			} catch (InterruptedException ignored) {
 			}
 		}
+	}
+
+	private BlockingQueue<Message> removeSubscriber(Subscriber m) {
+		eventsLock.acquireWriteLock();
+		try {
+			BlockingQueue<Message> subscriberMsgQueue = subscriberQueues.remove(m);
+			unsubscribeFromMessages(m);
+			return subscriberMsgQueue;
+		}
+		finally {
+			eventsLock.releaseWriteLock();
+		}
+	}
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private void completeFutures(BlockingQueue<Message> subscriberMsgQueue) {
+		for (Message msg : subscriberMsgQueue) {
+			if (msg instanceof Event) {
+				Event event = (Event)msg;
+				complete(event, null);
+			}
+		}
+		subscriberMsgQueue.clear();
 	}
 
 	private static class InstanceHolder {

@@ -2,6 +2,7 @@ package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.GadgetAvailableEvent;
+import bgu.spl.mics.application.messages.LastTickBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.eventsInfo.GadgetAvailableEventArgs;
 import bgu.spl.mics.application.messages.eventsInfo.GadgetAvailableResult;
@@ -26,17 +27,20 @@ public class Q extends Subscriber {
 
 	@Override
 	protected void initialize() {
-		// TODO: handle last tick
+		subscribeBroadcast(LastTickBroadcast.class, this::onLastTimeTick);
 		subscribeBroadcast(TickBroadcast.class, this::onTimeTick);
 		subscribeEvent(GadgetAvailableEvent.class, this::onGadgetAvailableEvent);
 	}
 
-	// TODO: the last tick we got may not be updated when we're handling events
+	private void onLastTimeTick(LastTickBroadcast b) {
+		onTimeTick(b);
+		terminate();
+	}
+
 	private void onTimeTick(TickBroadcast b) {
 		lastTick = b.getTick();
 	}
 
-	// TODO: multiple Qs might be trying to get the same gadget
 	/*
 	That may cause some missions not to get executed, for example:
 	One Q retrieves gadget 'A'. The M who handles the mission who needed that gadget might not be executed because of time constraints.
@@ -44,7 +48,6 @@ public class Q extends Subscriber {
 	It is possible that if the second Q got the gadget, the second mission would be executed.
 	 */
 	private void onGadgetAvailableEvent(GadgetAvailableEvent gadgetAvailableEvent) {
-		// TODO: handle null future and null future.get() return values
 		GadgetAvailableEventArgs args = gadgetAvailableEvent.getArgs();
 		boolean isAvailable = inventory.getItem(args.gadget());
 		GadgetAvailableResult result = new GadgetAvailableResult(isAvailable, lastTick, serialNumber);

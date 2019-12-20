@@ -200,7 +200,6 @@ public class MessageBrokerImpl implements MessageBroker {
 			Queue<Subscriber> subscribers = subscribedEvents.get(msgType);
 			subscribers.remove(m);
 
-			// TODO: maybe not remove the subscriber from the queue, but skip it when we encounter in while sending events
 			// Removes the message queue for the type if no one is subscribed to the message
 			if (subscribers.isEmpty()) {
 				iterator.remove();

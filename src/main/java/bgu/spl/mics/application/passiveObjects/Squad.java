@@ -32,7 +32,7 @@ public class Squad {
 	 * 						of the squad.
 	 */
 	public void load (Agent[] agents) {
-		this.agents = new HashMap<String, Agent>();
+		this.agents = new HashMap<>();
 		for(Agent agent: agents){
 			this.agents.put(agent.getSerialNumber(), agent);
 		}
@@ -61,7 +61,7 @@ public class Squad {
 
 		try{
 			Thread.sleep(time*timeTickDuration);
-		} catch (Exception e) {}
+		} catch (InterruptedException ignored) {}
 		releaseAgents(serials);
 	}
 

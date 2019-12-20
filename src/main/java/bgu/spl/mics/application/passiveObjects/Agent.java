@@ -12,6 +12,8 @@ public class Agent {
 
 	private String serialNumber;
 	private String name;
+
+	// TODO: change to normal boolean
 	private AtomicBoolean available;
 
 	public Agent(){

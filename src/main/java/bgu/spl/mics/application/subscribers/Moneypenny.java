@@ -14,7 +14,8 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Moneypenny extends Subscriber {
-	// TODO: have moneypenny available to send agents at all times to execute missions. see https://www.cs.bgu.ac.il/~spl201/index.php?page=Assignments.Assignment_2Forum&action=show-thread&id=80cb06ba55a76335ff907450a401c197
+	// TODO: have moneypenny available to send agents at all times to execute missions. see https://www.cs.bgu.ac.il/~spl201/index.php?page=Assignments.Assignment_2Forum&action=show-thread&id=80cb06ba55a76335ff907450a401c1974
+	// TODO: add constructor with a parameter telling this instance whether to subscribe to AgentsAvailable xor to both Send and Release agents events
 
 	private Squad squad;
 	//TODO check the serial
@@ -27,6 +28,7 @@ public class Moneypenny extends Subscriber {
 	@Override
 	protected void initialize() {
 		// TODO: handle last tick
+		// TODO: handle release/send agents events
 		subscribeEvent(AgentsAvailableEvent.class, this::callBack);
 	}
 

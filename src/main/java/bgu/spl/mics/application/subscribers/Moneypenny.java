@@ -14,9 +14,11 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Moneypenny extends Subscriber {
+	// TODO: have moneypenny available to send agents at all times to execute missions. see https://www.cs.bgu.ac.il/~spl201/index.php?page=Assignments.Assignment_2Forum&action=show-thread&id=80cb06ba55a76335ff907450a401c197
 
 	private Squad squad;
 	//TODO check the serial
+	// TODO: add serial number as field
 	public Moneypenny(int id) {
 		super(""+id);
 		squad = Squad.getInstance();
@@ -24,10 +26,12 @@ public class Moneypenny extends Subscriber {
 
 	@Override
 	protected void initialize() {
+		// TODO: handle last tick
 		subscribeEvent(AgentsAvailableEvent.class, this::callBack);
 	}
 
 	private void callBack(AgentsAvailableEvent aAE){
+		// TODO: call getAgents once and then complete (since we will wait for eveyone to be acquired)
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		while(! squad.getAgents(agents)) {}
 	}

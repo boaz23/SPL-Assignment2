@@ -29,6 +29,7 @@ public class M extends Subscriber {
 
 	@Override
 	protected void initialize() {
+		// TODO: handle last tick
 		subscribeBroadcast(TickBroadcast.class, this::onTimeTick);
 		subscribeEvent(MissionReceivedEvent.class, this::onMissionReceived);
 	}

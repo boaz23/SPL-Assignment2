@@ -26,6 +26,7 @@ public class Q extends Subscriber {
 
 	@Override
 	protected void initialize() {
+		// TODO: handle last tick
 		subscribeBroadcast(TickBroadcast.class, this::onTimeTick);
 		subscribeEvent(GadgetAvailableEvent.class, this::onGadgetAvailableEvent);
 	}

@@ -58,6 +58,7 @@ public class Squad {
 	public void sendAgents(List<String> serials, int time){
 		//TODO check if we need to check if the agents are available
 		try{
+			// TODO: sleep for time*(ms in tick)
 			Thread.sleep(time);
 		} catch (Exception e) {}
 		releaseAgents(serials);
@@ -69,6 +70,7 @@ public class Squad {
 	 * @return ‘false’ if an agent of serialNumber ‘serial’ is missing, and ‘true’ otherwise
 	 */
 	public boolean getAgents(List<String> serials){
+		// TODO: check that everyone exists before acquiring
 		boolean allExist = true;
 		serials.sort(String.CASE_INSENSITIVE_ORDER);
 		for(String serial: serials){

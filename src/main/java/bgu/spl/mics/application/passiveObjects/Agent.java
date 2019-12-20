@@ -59,9 +59,10 @@ public class Agent {
 	 * Acquires an agent.
 	 */
 	public void acquire(){
-		while(!available.compareAndSet(true, false)){}
+		while(!available.compareAndSet(true, false));
 	}
 
+	// TODO: use wait/notify
 	/**
 	 * Releases an agent.
 	 */

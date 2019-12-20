@@ -23,6 +23,7 @@ public class Intelligence extends Subscriber {
 		super(name);
 		missionInfos = new HashMap<>();
 		for(MissionInfo mission : missions){
+			// TODO: initialize list
 			LinkedList<MissionInfo> list =  missionInfos.get(mission.getTimeIssued());
 			list.add(mission);
 		}
@@ -30,6 +31,7 @@ public class Intelligence extends Subscriber {
 
 	@Override
 	protected void initialize() {
+		// TODO: handle last tick
 		subscribeBroadcast(TickBroadcast.class, this::callBack);
 	}
 

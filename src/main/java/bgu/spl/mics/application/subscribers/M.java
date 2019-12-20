@@ -21,10 +21,10 @@ public class M extends Subscriber {
 	private int lastTick;
 	private final Diary diary;
 
-	public M(int serialNumber) {
+	public M(int serialNumber, Diary diary) {
 		super("M" + serialNumber);
 		this.serialNumber = serialNumber;
-		diary = Diary.getInstance();
+		this.diary = diary;
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public class M extends Subscriber {
 		List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();
 		AgentsAvailableResult agentsAvailableResult = areAgentsValid(agentsSerialNumbers);
 		missionPreparation.setAgentsAvailableResult(agentsAvailableResult);
-		if (!agentsAvailableResult.areSerialAgentsNumbersValid()) {
+		if (!missionPreparation.areSerialAgentsNumbersValid()) {
 			// TODO: what are we supposed to do?
 			// Abort the mission because it's invalid?
 			return missionPreparation;
@@ -71,7 +71,7 @@ public class M extends Subscriber {
 		missionPreparation.setShouldReleaseAgents(true);
 		GadgetAvailableResult gadgetAvailableResult = isGadgetAvailable(missionInfo.getGadget());
 		missionPreparation.setGadgetAvailableResult(gadgetAvailableResult);
-		if (!gadgetAvailableResult.isAvailable()) {
+		if (!missionPreparation.isGadgetAvailable()) {
 			// TODO: what are we supposed to do?
 			// Abort the mission because it's invalid?
 			return missionPreparation;

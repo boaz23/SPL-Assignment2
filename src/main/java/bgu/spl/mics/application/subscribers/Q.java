@@ -18,10 +18,10 @@ public class Q extends Subscriber {
 	private int lastTick;
 	private final Inventory inventory;
 
-	public Q(int serialNumber) {
+	public Q(int serialNumber, Inventory inventory) {
 		super("Q" + serialNumber);
 		this.serialNumber = serialNumber;
-		inventory = Inventory.getInstance();
+		this.inventory = inventory;
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.Subscriber;
+import bgu.spl.mics.application.messages.LastTickBroadcast;
 import bgu.spl.mics.application.messages.MissionReceivedEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
@@ -18,25 +19,26 @@ import java.util.*;
 public class Intelligence extends Subscriber {
 
 	private Map<Integer, LinkedList<MissionInfo>> missionInfos;
-	//TODO init the list
 	public Intelligence(String name, MissionInfo[] missions) {
 		super(name);
 		missionInfos = new HashMap<>();
 		for(MissionInfo mission : missions){
-			// TODO: initialize list
-			LinkedList<MissionInfo> list =  missionInfos.get(mission.getTimeIssued());
+			List<MissionInfo> list =  missionInfos.get(mission.getTimeIssued());
+			if(list == null){
+				list = new LinkedList<>();
+			}
 			list.add(mission);
 		}
 	}
 
 	@Override
 	protected void initialize() {
-		// TODO: handle last tick
-		subscribeBroadcast(TickBroadcast.class, this::callBack);
+		subscribeBroadcast(TickBroadcast.class, this::TickBrodcastcallBack);
+		subscribeBroadcast(LastTickBroadcast.class, this::lastTickBroadcast);
 	}
 
 	//TODO check if any other subscriber can alter the mission, if so edit the code to be tread safe
-	private void callBack(TickBroadcast tick){
+	private void TickBrodcastcallBack(TickBroadcast tick){
 		int tickTime = tick.getTick();
 		LinkedList<MissionInfo> list =  missionInfos.getOrDefault(tickTime, null);
 		if(list != null){
@@ -45,5 +47,9 @@ public class Intelligence extends Subscriber {
 			}
 		}
 
+	}
+
+	private void lastTickBroadcast(LastTickBroadcast lastTickBroadcast){
+		terminate();
 	}
 }

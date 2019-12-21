@@ -24,7 +24,7 @@ public class M extends Subscriber {
 	private final Diary diary;
 
 	public M(int serialNumber, Diary diary) {
-		super("M" + serialNumber);
+		super("M " + serialNumber);
 		this.serialNumber = serialNumber;
 		this.diary = diary;
 	}
@@ -307,13 +307,6 @@ public class M extends Subscriber {
 		 */
 		public int qTime() {
 			return gadgetAvailableResult.receiveTime();
-		}
-
-		/**
-		 * @return The serial number of the Q instance who handled the gadget availability request
-		 */
-		public int q() {
-			return gadgetAvailableResult.qSerialNumber();
 		}
 
 		/**

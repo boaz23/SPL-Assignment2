@@ -15,13 +15,11 @@ import bgu.spl.mics.application.passiveObjects.Inventory;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Q extends Subscriber {
-	private final int serialNumber;
 	private int lastTick;
 	private final Inventory inventory;
 
-	public Q(int serialNumber, Inventory inventory) {
-		super("Q" + serialNumber);
-		this.serialNumber = serialNumber;
+	public Q(Inventory inventory) {
+		super("Q");
 		this.inventory = inventory;
 	}
 
@@ -50,7 +48,7 @@ public class Q extends Subscriber {
 	private void onGadgetAvailableEvent(GadgetAvailableEvent gadgetAvailableEvent) {
 		GadgetAvailableEventArgs args = gadgetAvailableEvent.getArgs();
 		boolean isAvailable = inventory.getItem(args.gadget());
-		GadgetAvailableResult result = new GadgetAvailableResult(isAvailable, lastTick, serialNumber);
+		GadgetAvailableResult result = new GadgetAvailableResult(isAvailable, lastTick);
 		complete(gadgetAvailableEvent, result);
 	}
 }

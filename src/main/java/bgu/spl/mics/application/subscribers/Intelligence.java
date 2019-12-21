@@ -23,10 +23,7 @@ public class Intelligence extends Subscriber {
 		super(name);
 		missionInfos = new HashMap<>();
 		for(MissionInfo mission : missions){
-			List<MissionInfo> list =  missionInfos.get(mission.getTimeIssued());
-			if(list == null){
-				list = new LinkedList<>();
-			}
+			List<MissionInfo> list =  missionInfos.computeIfAbsent(mission.getTimeIssued(), t -> new LinkedList<>());
 			list.add(mission);
 		}
 	}

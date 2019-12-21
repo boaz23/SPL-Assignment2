@@ -88,7 +88,7 @@ public class M extends Subscriber {
 			}
 		}
 
-		if (lastTick > missionInfo.getTimeExpired()) {
+		if (lastTick >= missionInfo.getTimeExpired()) {
 			// Mission time's expired
 			return missionPreparation;
 		}

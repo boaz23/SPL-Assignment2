@@ -1,10 +1,9 @@
 package bgu.spl.mics;
 
-import bgu.spl.mics.application.Loggers;
+import bgu.spl.mics.loggers.Loggers;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.logging.Logger;
 
 /**
  * The {@link MessageBrokerImpl class is the implementation of the MessageBroker interface.
@@ -226,13 +225,10 @@ public class MessageBrokerImpl implements MessageBroker {
 	 * @param <E> The item's type
 	 */
 	private static <E> void putToBlockingQueue(BlockingQueue<E> queue, E e) {
-		boolean successfulAdd = false;
-		while (!successfulAdd) {
-			try {
-				queue.put(e);
-				successfulAdd = true;
-			} catch (InterruptedException ignored) {
-			}
+		try {
+			queue.put(e);
+		} catch (InterruptedException ignored) {
+			Thread.currentThread().interrupt();
 		}
 	}
 

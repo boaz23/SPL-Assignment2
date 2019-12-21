@@ -1,7 +1,7 @@
 package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.Subscriber;
-import bgu.spl.mics.application.Loggers;
+import bgu.spl.mics.loggers.Loggers;
 import bgu.spl.mics.application.messages.AgentsAvailableEvent;;
 import bgu.spl.mics.application.messages.LastTickBroadcast;
 import bgu.spl.mics.application.messages.ReleaseAgentsEvent;
@@ -11,7 +11,6 @@ import bgu.spl.mics.application.messages.eventsInfo.ReleaseAgentsEventArgs;
 import bgu.spl.mics.application.messages.eventsInfo.SendAgentsEventArgs;
 import bgu.spl.mics.application.passiveObjects.Squad;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**

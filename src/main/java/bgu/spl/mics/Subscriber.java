@@ -1,6 +1,6 @@
 package bgu.spl.mics;
 
-import bgu.spl.mics.application.Loggers;
+import bgu.spl.mics.loggers.Loggers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -137,6 +137,7 @@ public abstract class Subscriber extends RunnableSubPub {
                 }
             }
         } catch (InterruptedException e) {
+            terminated = true;
         }
 
         messageBroker.unregister(this);

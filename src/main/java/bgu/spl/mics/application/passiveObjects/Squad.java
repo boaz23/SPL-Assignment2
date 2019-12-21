@@ -61,7 +61,9 @@ public class Squad {
 
 		try{
 			Thread.sleep(time*timeTickDuration);
-		} catch (InterruptedException ignored) {}
+		} catch (InterruptedException ignored) {
+			Thread.currentThread().interrupt();
+		}
 		releaseAgents(serials);
 	}
 

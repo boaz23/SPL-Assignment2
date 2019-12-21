@@ -1,6 +1,6 @@
 package bgu.spl.mics.loggers;
 
-public class NonLogger implements Logger {
+public class NoLogger implements Logger {
     @Override
     public Logger appendLine(String s) {
         return this;

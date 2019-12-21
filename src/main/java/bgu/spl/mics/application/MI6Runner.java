@@ -8,6 +8,7 @@ import bgu.spl.mics.application.subscribers.Intelligence;
 import bgu.spl.mics.application.subscribers.M;
 import bgu.spl.mics.application.subscribers.Moneypenny;
 import bgu.spl.mics.application.subscribers.Q;
+import bgu.spl.mics.loggers.Loggers;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

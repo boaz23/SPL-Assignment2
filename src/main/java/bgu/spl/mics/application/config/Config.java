@@ -1,7 +1,7 @@
 package bgu.spl.mics.application.config;
 
 public class Config {
-    public Gadget[] inventory;
-    public Agent[] squad;
+    public String[] inventory;
     public Services services;
+    public Agent[] squad;
 }

@@ -66,13 +66,7 @@ public class MI6Runner {
     }
 
     private static void loadInventory(Config config) {
-        Gadget[] gadgetObjs = config.inventory;
-        String[] gadgetStrs = new String[gadgetObjs.length];
-        for (int i = 0; i < gadgetObjs.length; i++) {
-            gadgetStrs[i] = gadgetObjs[i].name;
-        }
-
-        Inventory.getInstance().load(gadgetStrs);
+        Inventory.getInstance().load(config.inventory);
     }
 
     private static void loadSquad(Config config) {
@@ -162,22 +156,8 @@ public class MI6Runner {
         return missionInfos;
     }
 
-    private static ArrayList<String> initializeAgentsSerialNumbers(Mission mission) {
-        MissionAgent[] missionAgents = mission.agents;
-        ArrayList<String> agentsSerialNumbers;
-        if (missionAgents != null) {
-            agentsSerialNumbers = new ArrayList<>(missionAgents.length);
-            for (int i = 0; i < missionAgents.length; i++) {
-                agentsSerialNumbers.add(missionAgents[i].serialNumber);
-            }
-        }
-        else {
-            agentsSerialNumbers = new ArrayList<String>(1) {{
-                add(mission.agent);
-            }};
-        }
-
-        return agentsSerialNumbers;
+    private static List<String> initializeAgentsSerialNumbers(Mission mission) {
+        return Arrays.asList(mission.serialAgentsNumbers);
     }
 
     private static Thread initializeQ(Inventory inventory) {

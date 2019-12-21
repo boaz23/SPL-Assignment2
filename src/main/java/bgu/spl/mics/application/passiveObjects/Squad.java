@@ -80,6 +80,9 @@ public class Squad {
 			for (String serial : serials) {
 				Agent agent = agents.get(serial);
 				agent.acquire();
+				if (Thread.currentThread().isInterrupted()) {
+					break;
+				}
 			}
 		}
 

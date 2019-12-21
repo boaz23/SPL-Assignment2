@@ -22,8 +22,6 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Moneypenny extends Subscriber {
-	// TODO: how should moneypenny know to terminate herself? she might be acquiring, releasing or sending agents and the last tick message might be a long way into the message queue
-
 	public enum SubscribeTO {AgentsAvailable, SendAndRelease}
 
 	private Squad squad;
@@ -60,18 +58,21 @@ public class Moneypenny extends Subscriber {
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		boolean agentsExist = squad.getAgents(agents);
 
-		AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist,
-				agentsExist ? squad.getAgentsNames(agents) : null, agents, id);
-		complete(aAE, agentsAvailableResult);
+		if (Thread.currentThread().isInterrupted()) {
+			terminate();
+		}
+		else {
+			AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist,
+					agentsExist ? squad.getAgentsNames(agents) : null, agents, id);
+			complete(aAE, agentsAvailableResult);
+		}
 	}
 
 	private void sendAgentsCallback(SendAgentsEvent sendAgentsEvent){
-		//TODO check if we can edit the code to make sendAgents not blocking for this instance
 		SendAgentsEventArgs sendAgentsEventArgs = sendAgentsEvent.getArgs();
 		Loggers.DefaultLogger.appendLine(getName() + " executing mission: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		squad.sendAgents(sendAgentsEventArgs.serialAgentsNumbers(),
 				sendAgentsEventArgs.duration());
-		//TODO edit the null in the complete function
 		Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		complete(sendAgentsEvent, null);
 	}
@@ -79,7 +80,6 @@ public class Moneypenny extends Subscriber {
 	private void releaseAgentsCallback(ReleaseAgentsEvent releaseAgentsEvent){
 		ReleaseAgentsEventArgs releaseAgentsEventArgs = releaseAgentsEvent.getArgs();
 		squad.releaseAgents(releaseAgentsEventArgs.serialAgentsNumbers());
-		//TODO edit the null in the complete function
 		complete(releaseAgentsEvent, null);
 	}
 

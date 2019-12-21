@@ -1,8 +1,5 @@
 package bgu.spl.mics.application;
 
-// TODO: Get rid of all the other TODOs when finished
-// TODO: make sure everyone registers before sending events
-
 import bgu.spl.mics.application.config.*;
 import bgu.spl.mics.application.passiveObjects.*;
 import bgu.spl.mics.application.passiveObjects.Agent;

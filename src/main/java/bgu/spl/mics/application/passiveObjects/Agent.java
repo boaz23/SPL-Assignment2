@@ -68,7 +68,9 @@ public class Agent {
 				wait();
 			}
 			available = false;
-		} catch (InterruptedException e) { }
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 	/**
 	 * Releases an agent.

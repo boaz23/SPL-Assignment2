@@ -154,7 +154,6 @@ public abstract class Subscriber extends RunnableSubPub {
 
         // !!! It should be type safe because we only add callbacks with their matching type
         // (hopefully no one actively 'tricks' the generic subscribe method) !!!
-        // TODO: what if we get interrupted while waiting for a future to complete? we might wait a long time before terminating
         Callback callback = messageCallbacks.get(message.getClass());
         Loggers.DefaultLogger.appendLine(getName() + " handling " + message);
         callback.call(message);

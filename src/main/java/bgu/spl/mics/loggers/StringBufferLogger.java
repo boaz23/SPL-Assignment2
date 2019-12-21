@@ -3,34 +3,34 @@ package bgu.spl.mics.loggers;
 /**
  * Responsible for logging to a string buffer
  */
-public class LoggerImpl implements Logger {
+public class StringBufferLogger implements Logger {
     private StringBuilder sb;
 
     /**
      * Initializes a new logger instance with a default StringBuffer
      */
-    public LoggerImpl() {
+    public StringBufferLogger() {
         sb = new StringBuilder();
     }
 
-    public synchronized LoggerImpl appendLine(String s) {
+    public synchronized StringBufferLogger appendLine(String s) {
         sb.append(s)
             .append('\n');
         return this;
     }
 
-    public synchronized LoggerImpl append(String s) {
+    public synchronized StringBufferLogger append(String s) {
         sb.append(s);
         return this;
     }
 
-    public synchronized LoggerImpl appendLine(Object o) {
+    public synchronized StringBufferLogger appendLine(Object o) {
         sb.append(o)
             .append('\n');
         return this;
     }
 
-    public synchronized LoggerImpl append(Object o) {
+    public synchronized StringBufferLogger append(Object o) {
         sb.append(o);
         return this;
     }

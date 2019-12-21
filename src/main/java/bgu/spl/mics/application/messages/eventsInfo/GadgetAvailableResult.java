@@ -33,4 +33,11 @@ public class GadgetAvailableResult {
     public int receiveTime() {
         return receiveTime;
     }
+
+    @Override
+    public String toString() {
+        return "GadgetAvailableResult{" +
+                "isAvailable=" + isAvailable +
+                '}';
+    }
 }

@@ -61,7 +61,7 @@ public class Moneypenny extends Subscriber {
 		boolean agentsExist = squad.getAgents(agents);
 
 		AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist,
-				agentsExist ? squad.getAgentsNames(agents) : null, id);
+				agentsExist ? squad.getAgentsNames(agents) : null, agents, id);
 		complete(aAE, agentsAvailableResult);
 	}
 

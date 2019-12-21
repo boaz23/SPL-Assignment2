@@ -4,6 +4,7 @@ import bgu.spl.mics.application.Loggers;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 /**
  * The {@link MessageBrokerImpl class is the implementation of the MessageBroker interface.
@@ -70,6 +71,7 @@ public class MessageBrokerImpl implements MessageBroker {
 		Future<T> future = (Future<T>)futures.get(e);
 		future.resolve(result);
 		futures.remove(e, future);
+		Loggers.DefaultLogger.appendLine(e + " completed with: " + result);
 	}
 
 	@Override
@@ -115,12 +117,14 @@ public class MessageBrokerImpl implements MessageBroker {
 	@Override
 	public void register(Subscriber m) {
 		subscriberQueues.computeIfAbsent(m, this::createSubscriberMessageQueue);
+		Loggers.DefaultLogger.appendLine(m.getName() + " registered");
 	}
 
 	@Override
 	public void unregister(Subscriber m) {
 		BlockingQueue<Message> subscriberMsgQueue = removeSubscriber(m);
 		completeFutures(subscriberMsgQueue);
+		Loggers.DefaultLogger.appendLine(m.getName() + " unregistered");
 	}
 
 	@Override
@@ -154,6 +158,7 @@ public class MessageBrokerImpl implements MessageBroker {
 		finally {
 			eventsLock.releaseWriteLock();
 		}
+		Loggers.DefaultLogger.appendLine(m.getName() + " subscribed to " + type.getSimpleName());
 	}
 
 	private void addMessageToSubscriberQueue(Message msg, Subscriber subscriber) {

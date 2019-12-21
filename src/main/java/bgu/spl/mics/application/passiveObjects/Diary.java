@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Passive object representing the diary where all reports are stored.
@@ -18,11 +19,11 @@ import java.util.List;
  */
 public class Diary {
 	private List<Report> reports;
-	private int total;
+	private AtomicInteger total;
 
 	public Diary() {
 		reports = new LinkedList<>();
-		total = 0;
+		total = new AtomicInteger(0);
 	}
 
 	/**
@@ -70,16 +71,14 @@ public class Diary {
 	 * @return the total number of received missions (executed / aborted) be all the M-instances.
 	 */
 	public int getTotal(){
-		return total;
+		return total.get();
 	}
 
 	/**
 	 * Increments the total number of received missions by 1
 	 */
 	public void incrementTotal(){
-		synchronized (this) {
-			total++;
-		}
+		total.incrementAndGet();
 	}
 
 	private static class InstanceHolder {

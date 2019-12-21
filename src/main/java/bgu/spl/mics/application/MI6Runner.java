@@ -23,6 +23,7 @@ public class MI6Runner {
     public static void main(String[] args) {
         if (args.length < 3) {
             printErr("Bad arguments, expected 3 file paths");
+            return;
         }
 
         String configFilePath = args[0];

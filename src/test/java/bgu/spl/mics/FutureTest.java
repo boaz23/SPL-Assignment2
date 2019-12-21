@@ -99,7 +99,7 @@ public class FutureTest {
         resolver.start();
 
         long start = System.currentTimeMillis();
-        Integer result = future.get(50, TimeUnit.MILLISECONDS);
+        Integer result = future.get(60, TimeUnit.MILLISECONDS);
         long end = System.currentTimeMillis();
         long duration = end - start;
 
@@ -119,7 +119,7 @@ public class FutureTest {
         assertFalse(future.isDone(), "Done before resolved");
         Thread resolver = new Thread(() -> {
             try {
-                Thread.sleep(50);
+                Thread.sleep(80);
                 future.resolve(7);
             } catch (InterruptedException e) {
                 e.printStackTrace();

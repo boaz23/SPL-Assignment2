@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 
+import bgu.spl.mics.application.Loggers;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -74,9 +76,14 @@ public class MessageBrokerImpl implements MessageBroker {
 	public void sendBroadcast(Broadcast b) {
 		eventsLock.acquireReadLock();
 		try {
+			Loggers.DefaultLogger.appendLine(Thread.currentThread().getName() + " sending " + b);
+
 			Queue<Subscriber> subscribers = getMessageSubscribers(b);
 			if (subscribers != null) {
 				addBroadcastToSubscriberQueues(b, subscribers);
+			}
+			else {
+				Loggers.DefaultLogger.appendLine("No one is subbed to '" + b.getClass().getName());
 			}
 		}
 		finally {
@@ -88,9 +95,14 @@ public class MessageBrokerImpl implements MessageBroker {
 	public <T> Future<T> sendEvent(Event<T> e) {
 		eventsLock.acquireReadLock();
 		try {
+			Loggers.DefaultLogger.appendLine(Thread.currentThread().getName() + " sending " + e);
+
 			Queue<Subscriber> subscribers = getMessageSubscribers(e);
 			if (subscribers != null) {
 				return roundRobinEvent(e, subscribers);
+			}
+			else {
+				Loggers.DefaultLogger.appendLine("No one is subbed to '" + e.getClass().getName());
 			}
 
 			return null;
@@ -153,6 +165,7 @@ public class MessageBrokerImpl implements MessageBroker {
 		// No (further) synchronization (beyond the lock for the queues map) is needed,
 		// since after registration, the container doesn't change (for a broadcast message type)
 		for (Subscriber subscriber : subscribers) {
+			Loggers.DefaultLogger.appendLine(subscriber.getName() + " assigned " + b);
 			addMessageToSubscriberQueue(b, subscriber);
 		}
 	}
@@ -164,9 +177,11 @@ public class MessageBrokerImpl implements MessageBroker {
 			Subscriber subscriber = subscribers.poll();
 			if (subscriber == null) {
 				// No one is subscribed
+				Loggers.DefaultLogger.appendLine("No one is subbed to '" + e.getClass().getName());
 				return null;
 			}
 
+			Loggers.DefaultLogger.appendLine(subscriber.getName() + " assigned " + e);
 			Future<T> future = handEventToSubscriber(e, subscriber);
 			subscribers.add(subscriber);
 			return future;

@@ -11,15 +11,17 @@ import java.util.List;
 public class SendAgentsEventArgs {
     private final List<String> serialAgentsNumbers;
     private final int duration;
+    private final String missionName;
 
     /**
      * Initializes a new instance
      * @param serialAgentsNumbers The serial numbers of agents
      * @param duration The mission duration time
      */
-    public SendAgentsEventArgs(List<String> serialAgentsNumbers, int duration) {
+    public SendAgentsEventArgs(List<String> serialAgentsNumbers, int duration, String missionName) {
         this.serialAgentsNumbers = serialAgentsNumbers;
         this.duration = duration;
+        this.missionName = missionName;
     }
 
     /**
@@ -34,5 +36,12 @@ public class SendAgentsEventArgs {
      */
     public int duration() {
         return duration;
+    }
+
+    /**
+     * @return The mission's name
+     */
+    public String getMissionName() {
+        return missionName;
     }
 }

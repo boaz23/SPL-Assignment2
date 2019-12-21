@@ -1,7 +1,7 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.Event;
 import bgu.spl.mics.Subscriber;
+import bgu.spl.mics.application.Loggers;
 import bgu.spl.mics.application.messages.AgentsAvailableEvent;;
 import bgu.spl.mics.application.messages.LastTickBroadcast;
 import bgu.spl.mics.application.messages.ReleaseAgentsEvent;
@@ -31,7 +31,7 @@ public class Moneypenny extends Subscriber {
 	private SubscribeTO subscribeTo;
 
 	public Moneypenny(int id, SubscribeTO subscribeTo) {
-		super("Moneypenny "+ id);
+		super("Moneypenny"+ id);
 		this.id = id;
 		this.subscribeTo = subscribeTo;
 		squad = Squad.getInstance();
@@ -61,16 +61,18 @@ public class Moneypenny extends Subscriber {
 		boolean agentsExist = squad.getAgents(agents);
 
 		AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist,
-				squad.getAgentsNames(agents), id);
+				agentsExist ? squad.getAgentsNames(agents) : null, id);
 		complete(aAE, agentsAvailableResult);
 	}
 
 	private void sendAgentsCallback(SendAgentsEvent sendAgentsEvent){
 		//TODO check if we can edit the code to make sendAgents not blocking for this instance
 		SendAgentsEventArgs sendAgentsEventArgs = sendAgentsEvent.getArgs();
+		Loggers.DefaultLogger.appendLine(getName() + " executing mission: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		squad.sendAgents(sendAgentsEventArgs.serialAgentsNumbers(),
 				sendAgentsEventArgs.duration());
 		//TODO edit the null in the complete function
+		Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		complete(sendAgentsEvent, null);
 	}
 

@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
+import bgu.spl.mics.Utils;
 import bgu.spl.mics.application.messages.eventsInfo.AgentsAvailableEventArgs;
 import bgu.spl.mics.application.messages.eventsInfo.AgentsAvailableResult;
 
@@ -23,5 +24,10 @@ public class AgentsAvailableEvent implements Event<AgentsAvailableResult> {
      */
     public AgentsAvailableEventArgs getArgs() {
         return args;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": " + Utils.listToString(args.agentsSerialNumbers());
     }
 }

@@ -24,7 +24,7 @@ public class M extends Subscriber {
 	private final Diary diary;
 
 	public M(int serialNumber, Diary diary) {
-		super("M " + serialNumber);
+		super("M" + serialNumber);
 		this.serialNumber = serialNumber;
 		this.diary = diary;
 	}
@@ -58,12 +58,12 @@ public class M extends Subscriber {
 				terminate();
 				break;
 			case Execute:
-				sendAgents(missionInfo.getSerialAgentsNumbers(), missionInfo.getDuration());
+				sendAgents(missionInfo);
 				reportMission(missionInfo, missionPreparation);
 				break;
 			case Abort:
 				if (missionPreparation.shouldReleaseAgents()) {
-					releaseAgents(missionInfo.getSerialAgentsNumbers());
+					releaseAgents(missionInfo);
 				}
 				break;
 		}
@@ -98,12 +98,16 @@ public class M extends Subscriber {
 		return missionPreparation;
 	}
 
-	private void releaseAgents(List<String> agentsSerialNumbers) {
+	private void releaseAgents(MissionInfo missionInfo) {
+		List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();
 		sendEvent(new ReleaseAgentsEvent(new ReleaseAgentsEventArgs(agentsSerialNumbers)));
 	}
 
-	private void sendAgents(List<String> agentsSerialNumbers, int duration) {
-		sendEvent(new SendAgentsEvent(new SendAgentsEventArgs(agentsSerialNumbers, duration)));
+	private void sendAgents(MissionInfo missionInfo) {
+		List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();
+		int duration = missionInfo.getDuration();
+		String missionName = missionInfo.getMissionName();
+		sendEvent(new SendAgentsEvent(new SendAgentsEventArgs(agentsSerialNumbers, duration, missionName)));
 	}
 
 	private void reportMission(MissionInfo missionInfo, MissionPreparation missionPreparation) {

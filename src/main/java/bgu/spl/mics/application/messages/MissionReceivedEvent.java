@@ -23,4 +23,9 @@ public class MissionReceivedEvent implements Event<Void> {
     public MissionInfo getMissionInfo() {
         return missionInfo;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": '" + missionInfo.getMissionName() + "'";
+    }
 }

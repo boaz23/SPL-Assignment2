@@ -42,6 +42,8 @@ public class MI6Runner {
         waitForFinish(threads);
         printInventoryToFile(inventoryOutputFilePath);
         printDiaryToFile(diaryOutputFilePath);
+
+        System.out.println(Loggers.DefaultLogger);
     }
 
     private static Config loadConfig(String configFilePath) {
@@ -111,7 +113,7 @@ public class MI6Runner {
     }
 
     private static Thread initializeTimeService(Services services) {
-        TimeService timeService = new TimeService(services.time, "Time Service");
+        TimeService timeService = new TimeService(services.time, "TimeService");
         Thread timeServiceThread = new Thread(timeService);
         timeServiceThread.setName(timeService.getName());
         return timeServiceThread;
@@ -129,7 +131,7 @@ public class MI6Runner {
     }
 
     private static Intelligence initializeIntelligence(bgu.spl.mics.application.config.Intelligence intelligenceObj, int id) {
-        String name = "Intelligence " + id;
+        String name = "Intelligence" + id;
         MissionInfo[] missionInfos = initializeMissionInfos(intelligenceObj.missions);
         return new Intelligence(name, missionInfos);
     }

@@ -24,4 +24,9 @@ public class GadgetAvailableEvent implements Event<GadgetAvailableResult> {
     public GadgetAvailableEventArgs getArgs() {
         return args;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": '" + args.gadget() + "'";
+    }
 }

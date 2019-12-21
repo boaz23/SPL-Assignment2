@@ -22,4 +22,9 @@ public class TickBroadcast implements Broadcast {
     public int getTick() {
         return tick;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": " + tick;
+    }
 }

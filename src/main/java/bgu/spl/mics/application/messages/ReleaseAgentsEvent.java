@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
+import bgu.spl.mics.Utils;
 import bgu.spl.mics.application.messages.eventsInfo.ReleaseAgentsEventArgs;
 
 /**
@@ -22,5 +23,10 @@ public class ReleaseAgentsEvent implements Event<Void> {
      */
     public ReleaseAgentsEventArgs getArgs() {
         return args;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": " + Utils.listToString(args.serialAgentsNumbers());
     }
 }

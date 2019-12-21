@@ -63,15 +63,12 @@ public class Agent {
 	 * Acquires an agent.
 	 */
 	public synchronized void acquire() {
-		while (true) {
-			try {
-				while (!available) {
-					wait();
-				}
-				available = false;
-				break;
-			} catch (InterruptedException e) { }
-		}
+		try {
+			while (!available) {
+				wait();
+			}
+			available = false;
+		} catch (InterruptedException e) { }
 	}
 	/**
 	 * Releases an agent.

@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+// TODO: make Agent.acquire() fair (because it's better somehow)
 // TODO: remove commented out in moneypenny and in message broker round robin
 
 /** This is the Main class of the application. You should parse the input file,

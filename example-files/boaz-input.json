@@ -1,0 +1,60 @@
+{
+    "inventory": [ 
+        "Sky Hook",
+        "Geiger counter",
+        "X-ray glasses",
+        "Dagger shoe"
+    ],
+    "services": {
+        "M": 4,
+        "Moneypenny": 4,
+        "intelligence": [
+            {
+                "missions": [
+                    {
+                        "serialAgentsNumbers": [
+                            "006",
+                            "007"
+                        ],
+                        "duration": 100,
+                        "gadget": "Sky Hook",
+                        "name": "Thunderball",
+                        "timeExpired": 15,
+                        "timeIssued": 3
+                    }
+                ]
+            },
+            {
+                "missions": [
+                    {
+                        "serialAgentsNumbers": ["007"],
+                        "duration": 2,
+                        "gadget": "Dagger shoe",
+                        "name": "From Russia With Love",
+                        "timeExpired": 100,
+                        "timeIssued": 15
+                    },
+                    {
+                        "serialAgentsNumbers": ["007"],
+                        "duration": 2,
+                        "gadget": "Dagger shoe",
+                        "name": "From Russia With Love",
+                        "timeExpired": 8,
+                        "timeIssued": 6
+                    }
+                ]
+            }
+        ],
+        "time": 25
+    },
+    "squad": [
+        {
+            "name": "James Bond",
+            "serialNumber": "007"
+        },
+        {
+            "name": "Alec Trevelyan",
+            "serialNumber": "006"
+        }
+    ]
+}

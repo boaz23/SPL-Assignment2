@@ -57,7 +57,7 @@ public class Moneypenny extends Subscriber {
 	 * @param aAE AgentsAvailableEvent
 	 */
 	private void agentsAvailableCallback(AgentsAvailableEvent aAE){
-		Loggers.MnMPLogger.appendLine(getName() + " handling " + aAE);
+//		Loggers.MnMPLogger.appendLine(getName() + " handling " + aAE);
 
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		boolean agentsExist = squad.getAgents(agents);
@@ -66,11 +66,11 @@ public class Moneypenny extends Subscriber {
 //			lastAcquiredAgents = agents;
 //		}
 		if (Thread.currentThread().isInterrupted()) {
-			Loggers.MnMPLogger.appendLine(getName() + " interrupted");
+			Loggers.DefaultLogger.appendLine(getName() + " interrupted");
 			releaseAndTerminate();
 		}
 		else {
-			Loggers.MnMPLogger.appendLine(getName() + " completing " + aAE);
+			Loggers.DefaultLogger.appendLine(getName() + " completing " + aAE);
 			AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist,
 					agentsExist ? squad.getAgentsNames(agents) : null, agents, id);
 			complete(aAE, agentsAvailableResult);
@@ -81,18 +81,18 @@ public class Moneypenny extends Subscriber {
 		Loggers.MnMPLogger.appendLine(getName() + " handling " + sendAgentsEvent);
 
 		SendAgentsEventArgs sendAgentsEventArgs = sendAgentsEvent.getArgs();
-		Loggers.MnMPLogger.appendLine(getName() + " executing mission: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
+		Loggers.DefaultLogger.appendLine(getName() + " executing mission: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		squad.sendAgents(sendAgentsEventArgs.serialAgentsNumbers(),
 				sendAgentsEventArgs.duration());
-		Loggers.MnMPLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
+		Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		complete(sendAgentsEvent, null);
 	}
 
 	private void releaseAgentsCallback(ReleaseAgentsEvent releaseAgentsEvent){
-		Loggers.MnMPLogger.appendLine(getName() + " handling " + releaseAgentsEvent);
+		Loggers.DefaultLogger.appendLine(getName() + " handling " + releaseAgentsEvent);
 		ReleaseAgentsEventArgs releaseAgentsEventArgs = releaseAgentsEvent.getArgs();
 		squad.releaseAgents(releaseAgentsEventArgs.serialAgentsNumbers());
-		Loggers.MnMPLogger.appendLine(getName() + " completing " + releaseAgentsEvent);
+		Loggers.DefaultLogger.appendLine(getName() + " completing " + releaseAgentsEvent);
 		complete(releaseAgentsEvent, null);
 	}
 

@@ -54,9 +54,9 @@ public class MI6Runner {
     }
 
     private static void setLoggers() {
-        Loggers.DefaultLogger = Loggers.NoLogger;
+        Loggers.DefaultLogger = Loggers.StringBufferLogger;
         Loggers.MI6RunnerLogger = Loggers.StringBufferLogger;
-        Loggers.MnMPLogger = Loggers.StringBufferLogger;
+        Loggers.MnMPLogger = Loggers.NoLogger;
     }
 
     private static void start(Config config) {

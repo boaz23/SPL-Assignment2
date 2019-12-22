@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
+import bgu.spl.mics.Utils;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
 
 /**
@@ -26,6 +27,9 @@ public class MissionReceivedEvent implements Event<Void> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ": '" + missionInfo.getMissionName() + "'";
+        return getClass().getSimpleName() + '{' +
+                "mission: '" + getMissionInfo().getMissionName() + "', " +
+                "agents: " + Utils.listToString(getMissionInfo().getSerialAgentsNumbers()) +
+                '}';
     }
 }

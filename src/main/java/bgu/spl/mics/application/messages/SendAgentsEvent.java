@@ -27,6 +27,9 @@ public class SendAgentsEvent implements Event<Void> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ": " + Utils.listToString(args.serialAgentsNumbers());
+        return getClass().getSimpleName() + '{' +
+                "mission: '" + args.getMissionName() + "', " +
+                "agents: " + Utils.listToString(args.serialAgentsNumbers()) +
+                '}';
     }
 }

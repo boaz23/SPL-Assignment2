@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.passiveObjects;
-import bgu.spl.mics.MessageBrokerImpl;
+import bgu.spl.mics.Utils;
 import bgu.spl.mics.application.publishers.TimeService;
+import bgu.spl.mics.loggers.Loggers;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -73,19 +74,23 @@ public class Squad {
 	 * @return ‘false’ if an agent of serialNumber ‘serial’ is missing, and ‘true’ otherwise
 	 */
 	public boolean getAgents(List<String> serials){
-		boolean allExist = true;
-
-		allExist = checkAllExist(serials);
-
+		boolean allExist = checkAllExist(serials);
 		if(allExist) {
 			serials.sort(String.CASE_INSENSITIVE_ORDER);
+			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " getting agents " + Utils.listToString(serials));
 			for (String serial : serials) {
-				Agent agent = agents.get(serial);
-				agent.acquire();
 				if (Thread.currentThread().isInterrupted()) {
+					Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while trying to acquire " + serial);
 					break;
 				}
+				Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " trying to acquire " + serial);
+				Agent agent = agents.get(serial);
+				agent.acquire();
+				Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " acquired " + serial);
 			}
+		}
+		else {
+			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " got agents that do not exist " + Utils.listToString(serials));
 		}
 
 		return allExist;

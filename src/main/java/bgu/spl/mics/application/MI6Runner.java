@@ -8,6 +8,7 @@ import bgu.spl.mics.application.subscribers.Intelligence;
 import bgu.spl.mics.application.subscribers.M;
 import bgu.spl.mics.application.subscribers.Moneypenny;
 import bgu.spl.mics.application.subscribers.Q;
+import bgu.spl.mics.loggers.Logger;
 import bgu.spl.mics.loggers.Loggers;
 
 import java.io.FileNotFoundException;
@@ -38,18 +39,24 @@ public class MI6Runner {
             return;
         }
 
-        Loggers.DefaultLogger = Loggers.NoLogger;
+        setLoggers();
         Iterable<Iterable<Thread>> threads = initialize(config);
         startAll(threads);
         startInterrupter();
         waitForFinish(threads);
-        printLogToTerminal();
+        printLogsToTerminal();
         if (!Thread.currentThread().isInterrupted()) {
             printOutputToFiles(inventoryOutputFilePath, diaryOutputFilePath);
         }
         else {
             exit();
         }
+    }
+
+    private static void setLoggers() {
+        Loggers.DefaultLogger = Loggers.NoLogger;
+        Loggers.MI6RunnerLogger = Loggers.StringBufferLogger;
+        Loggers.MnMPLogger = Loggers.StringBufferLogger;
     }
 
     private static Config loadConfig(String configFilePath) {
@@ -241,9 +248,9 @@ public class MI6Runner {
                     thread.join();
                 }
             }
-            Loggers.DefaultLogger.append("\nDone!");
+            Loggers.MI6RunnerLogger.append("\nDone!");
         } catch (InterruptedException e) {
-            Loggers.DefaultLogger.append("\nInterrupted while waiting");
+            Loggers.MI6RunnerLogger.append("\nInterrupted while waiting");
             Thread.currentThread().interrupt();
             e.printStackTrace();
         }
@@ -268,10 +275,15 @@ public class MI6Runner {
         printDiaryToFile(diaryOutputFilePath);
     }
 
-    private static void printLogToTerminal() {
+    private static void printLogsToTerminal() {
+        printLogToTerminal(Loggers.DefaultLogger);
+        printLogToTerminal(Loggers.StringBufferLogger);
+    }
+
+    private static void printLogToTerminal(Logger logger) {
         try {
-            Loggers.DefaultLogger.flush();
-            System.out.println(Loggers.DefaultLogger);
+            logger.flush();
+            System.out.println(logger);
         } catch (IOException e) {
             e.printStackTrace();
         }

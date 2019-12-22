@@ -18,7 +18,7 @@ public class MessageBrokerImpl implements MessageBroker {
 	 * The inner containers should be synchronized independently.
 	 */
 	private ReadWriteLock eventsLock;
-	private Map<Class<? extends Message>, Queue<Subscriber>> subscribedEvents;
+	private Map<Class<? extends Message>, EventQueue> subscribedEvents;
 
 	private ConcurrentMap<Event<?>, Future<?>> futures;
 
@@ -79,9 +79,9 @@ public class MessageBrokerImpl implements MessageBroker {
 		try {
 			Loggers.DefaultLogger.appendLine(Thread.currentThread().getName() + " sending " + b);
 
-			Queue<Subscriber> subscribers = getMessageSubscribers(b);
-			if (subscribers != null) {
-				addBroadcastToSubscriberQueues(b, subscribers);
+			EventQueue queue = getMessageSubscribers(b);
+			if (queue != null) {
+				addBroadcastToSubscriberQueues(b, queue);
 			}
 			else {
 				Loggers.DefaultLogger.appendLine("No one is subbed to '" + b.getClass().getName());
@@ -98,24 +98,24 @@ public class MessageBrokerImpl implements MessageBroker {
 		try {
 			Loggers.DefaultLogger.appendLine(Thread.currentThread().getName() + " sending " + e);
 
-			Queue<Subscriber> subscribers = getMessageSubscribers(e);
-			if (subscribers != null) {
-				return roundRobinEvent(e, subscribers);
+			EventQueue queue = getMessageSubscribers(e);
+			if (queue != null) {
+				return roundRobinEvent(e, queue);
 			}
 			else {
 				Loggers.DefaultLogger.appendLine("No one is subbed to '" + e.getClass().getName());
 			}
-
-			return null;
 		}
 		finally {
 			eventsLock.releaseReadLock();
 		}
+
+		return null;
 	}
 
 	@Override
 	public void register(Subscriber m) {
-		subscriberQueues.computeIfAbsent(m, this::createSubscriberMessageQueue);
+		subscriberQueues.computeIfAbsent(m, s -> new LinkedBlockingQueue<>());
 		Loggers.DefaultLogger.appendLine(m.getName() + " registered");
 	}
 
@@ -132,27 +132,19 @@ public class MessageBrokerImpl implements MessageBroker {
 		return queue.take();
 	}
 
-	private BlockingQueue<Message> createSubscriberMessageQueue(Subscriber s) {
-		return new LinkedBlockingQueue<>();
-	}
-
-	private Queue<Subscriber> createContainerForMessageType(Class<? extends Message> c) {
-		return new ConcurrentLinkedQueue<>();
-	}
-
 	private BlockingQueue<Message> getSubscriberQueue(Subscriber m) {
 		return subscriberQueues.get(m);
 	}
 
-	private Queue<Subscriber> getMessageSubscribers(Message msg) {
+	private EventQueue getMessageSubscribers(Message msg) {
 		return subscribedEvents.getOrDefault(msg.getClass(), null);
 	}
 
 	private <T> void subscribeMessage(Class<? extends Message> type, Subscriber m) {
 		eventsLock.acquireWriteLock();
 		try {
-			Queue<Subscriber> subscribers = subscribedEvents.computeIfAbsent(type, this::createContainerForMessageType);
-			subscribers.add(m);
+			EventQueue queue = subscribedEvents.computeIfAbsent(type, t -> new EventQueue());
+			queue.add(m);
 		}
 		finally {
 			eventsLock.releaseWriteLock();
@@ -165,20 +157,20 @@ public class MessageBrokerImpl implements MessageBroker {
 		putToBlockingQueue(queue, msg);
 	}
 
-	private void addBroadcastToSubscriberQueues(Broadcast b, Collection<Subscriber> subscribers) {
+	private void addBroadcastToSubscriberQueues(Broadcast b, EventQueue queue) {
 		// No (further) synchronization (beyond the lock for the queues map) is needed,
 		// since after registration, the container doesn't change (for a broadcast message type)
-		for (Subscriber subscriber : subscribers) {
+		for (Subscriber subscriber : queue.queue) {
 			Loggers.DefaultLogger.appendLine(subscriber.getName() + " received " + b);
 			addMessageToSubscriberQueue(b, subscriber);
 		}
 	}
 
-	private <T> Future<T> roundRobinEvent(Event<T> e, Queue<Subscriber> subscribers) {
+	private <T> Future<T> roundRobinEvent(Event<T> e, EventQueue queue) {
 		// Many threads may try to send an event of this type,
 		// we need to make sure the queue (for this type of message) stays valid
-		synchronized (subscribedEvents.get(e.getClass())) {
-			Subscriber subscriber = subscribers.poll();
+		synchronized (queue.monitor) {
+			Subscriber subscriber = queue.poll();
 			if (subscriber == null) {
 				// No one is subscribed
 				Loggers.DefaultLogger.appendLine("No one is subbed to '" + e.getClass().getName());
@@ -187,7 +179,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
 			Loggers.DefaultLogger.appendLine(subscriber.getName() + " assigned " + e);
 			Future<T> future = handEventToSubscriber(e, subscriber);
-			subscribers.add(subscriber);
+			queue.add(subscriber);
 			return future;
 		}
 	}
@@ -208,11 +200,11 @@ public class MessageBrokerImpl implements MessageBroker {
 	private void unsubscribeFromMessages(Subscriber m, Iterator<Class<? extends Message>> iterator) {
 		while (iterator.hasNext()) {
 			Class<? extends Message> msgType = iterator.next();
-			Queue<Subscriber> subscribers = subscribedEvents.get(msgType);
-			subscribers.remove(m);
+			EventQueue queue = subscribedEvents.get(msgType);
+			queue.remove(m);
 
 			// Removes the message queue for the type if no one is subscribed to the message
-			if (subscribers.isEmpty()) {
+			if (queue.isEmpty()) {
 				iterator.remove();
 			}
 		}
@@ -253,6 +245,35 @@ public class MessageBrokerImpl implements MessageBroker {
 			}
 		}
 		subscriberMsgQueue.clear();
+	}
+
+	/**
+	 * Holds a subscriber queue for the round robin and a monitor object used to synchronize access to the queue
+	 */
+	private static class EventQueue {
+		private Queue<Subscriber> queue;
+		private final Object monitor;
+
+		public EventQueue() {
+			queue = new LinkedList<>();
+			monitor = new Object();
+		}
+
+		public void remove(Subscriber m) {
+			queue.remove(m);
+		}
+
+		public boolean isEmpty() {
+			return queue.isEmpty();
+		}
+
+		public void add(Subscriber m) {
+			queue.add(m);
+		}
+
+		public Subscriber poll() {
+			return queue.poll();
+		}
 	}
 
 	private static class InstanceHolder {

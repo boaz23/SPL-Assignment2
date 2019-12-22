@@ -3,6 +3,7 @@ package bgu.spl.mics.application.publishers;
 import bgu.spl.mics.Publisher;
 import bgu.spl.mics.application.messages.LastTickBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.loggers.Loggers;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -63,11 +64,13 @@ public class TimeService extends Publisher {
 		@Override
 		public void run() {
 			if(tick != duration){
+				Loggers.MnMPLogger.appendLine(getName() + " sending tick " + tick);
 				TickBroadcast tickBroadcast = new TickBroadcast(tick);
 				sendBroadcast(tickBroadcast);
 				tick = tick +1;
 
 			} else {
+				Loggers.MI6RunnerLogger.appendLine(getName() + " sending last tick");
 				LastTickBroadcast lastTickBroadcast = new LastTickBroadcast(tick);
 				sendBroadcast(lastTickBroadcast);
 				synchronized (notify){

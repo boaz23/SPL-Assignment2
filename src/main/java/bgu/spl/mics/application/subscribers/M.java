@@ -7,6 +7,7 @@ import bgu.spl.mics.application.messages.eventsInfo.*;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
 import bgu.spl.mics.application.passiveObjects.Report;
+import bgu.spl.mics.loggers.Loggers;
 
 import java.util.List;
 
@@ -46,11 +47,14 @@ public class M extends Subscriber {
 	}
 
 	private void onMissionReceived(MissionReceivedEvent e) {
+		Loggers.MnMPLogger.appendLine(getName() + " handling on tick " + lastTick + ": " + e);
+
 		MissionInfo missionInfo = e.getMissionInfo();
 		diary.incrementTotal();
 
 		MissionPreparation missionPreparation = checkValidity(missionInfo);
 		if (Thread.currentThread().isInterrupted()) {
+			Loggers.MnMPLogger.appendLine(getName() + " interrupted.");
 			missionPreparation.setStatus(ActionStatus.Terminate);
 		}
 		switch (missionPreparation.getStatus()) {
@@ -58,11 +62,14 @@ public class M extends Subscriber {
 				terminate();
 				break;
 			case Execute:
+				Loggers.MnMPLogger.appendLine(getName() + " executing mission " + missionInfo.getMissionName());
 				sendAgents(missionInfo);
 				reportMission(missionInfo, missionPreparation);
 				break;
 			case Abort:
+				Loggers.MnMPLogger.appendLine(getName() + " aborting mission " + missionInfo.getMissionName());
 				if (missionPreparation.shouldReleaseAgents()) {
+					Loggers.MnMPLogger.appendLine(getName() + " releasing agents for mission " + missionInfo.getMissionName());
 					releaseAgents(missionInfo);
 				}
 				break;
@@ -82,13 +89,16 @@ public class M extends Subscriber {
 				return missionPreparation;
 			}
 
+			Loggers.MnMPLogger.appendLine(getName() + " trying to fulfill need " + missionNeed.getName());
 			if (!missionNeed.tryFulfillNeed()) {
+				Loggers.MnMPLogger.appendLine(getName() + ": Need " + missionNeed.getName() + " failed to be fulfilled");
 				// Abort the mission because one of the mission prerequisite failed to be fulfilled
 				return missionPreparation;
 			}
 		}
 
 		if (lastTick >= missionInfo.getTimeExpired()) {
+			Loggers.MnMPLogger.appendLine(getName() + ": Time expired for mission " + missionInfo.getMissionName());
 			// Mission time's expired
 			return missionPreparation;
 		}
@@ -150,6 +160,11 @@ public class M extends Subscriber {
 
 			return valid;
 		}
+
+		@Override
+		public String getName() {
+			return "AgentsRequired";
+		}
 	}
 
 	private class GadgetNeedProvider extends MissionPreparationNeedProvider<GadgetAvailableResult> {
@@ -171,6 +186,11 @@ public class M extends Subscriber {
 		@Override
 		protected boolean hasBeenFulfilled() {
 			return missionPreparation.isGadgetAvailable();
+		}
+
+		@Override
+		public String getName() {
+			return "GadgetRequired";
 		}
 	}
 
@@ -208,6 +228,11 @@ public class M extends Subscriber {
 			setInfo(result);
 			return hasBeenFulfilled();
 		}
+
+		/**
+		 * @return A name for the need (used for debugging)
+		 */
+		public abstract String getName();
 
 		/**
 		 * Send event to get the information from other objects

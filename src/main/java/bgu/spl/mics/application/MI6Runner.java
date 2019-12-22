@@ -21,6 +21,8 @@ import java.util.List;
  * In the end, you should output serialized objects.
  */
 public class MI6Runner {
+    private static final int MAX_TICKS_BEFORE_INTERRUPT = 200;
+
     public static void main(String[] args) {
         if (args.length < 3) {
             printErr("Bad arguments, expected 3 file paths");
@@ -36,13 +38,17 @@ public class MI6Runner {
             return;
         }
 
+        Loggers.DefaultLogger = Loggers.NoLogger;
         Iterable<Iterable<Thread>> threads = initialize(config);
         startAll(threads);
+        startInterrupter();
         waitForFinish(threads);
-        printInventoryToFile(inventoryOutputFilePath);
-        printDiaryToFile(diaryOutputFilePath);
-
-        System.out.println(Loggers.DefaultLogger);
+        printLogToTerminal();
+        if (Thread.currentThread().isInterrupted()) {
+            exit();
+        } else {
+            printOutputToFiles(inventoryOutputFilePath, diaryOutputFilePath);
+        }
     }
 
     private static Config loadConfig(String configFilePath) {
@@ -228,15 +234,55 @@ public class MI6Runner {
     }
 
     private static void waitForFinish(Iterable<Iterable<Thread>> threads) {
-        for (Iterable<Thread> threadsGroup : threads) {
-            for (Thread thread : threadsGroup) {
-                try {
+        try {
+            for (Iterable<Thread> threadsGroup : threads) {
+                for (Thread thread : threadsGroup) {
                     thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
+            Loggers.DefaultLogger.append("\nDone!");
+        } catch (InterruptedException e) {
+            Loggers.DefaultLogger.append("\nInterrupted while waiting");
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
         }
+    }
+
+    private static void startInterrupter() {
+        Thread mainThread = Thread.currentThread();
+        Thread interrupter = new Thread(() -> {
+            try {
+                Thread.sleep(MAX_TICKS_BEFORE_INTERRUPT * TimeService.getTimeTickDuration());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            mainThread.interrupt();
+        });
+        interrupter.start();
+    }
+
+    private static void printOutputToFiles(String inventoryOutputFilePath, String diaryOutputFilePath) {
+        System.out.println("Printing output to files...");
+        printInventoryToFile(inventoryOutputFilePath);
+        printDiaryToFile(diaryOutputFilePath);
+    }
+
+    private static void printLogToTerminal() {
+        try {
+            Loggers.DefaultLogger.flush();
+            System.out.println(Loggers.DefaultLogger);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void exit() {
+        try {
+            Thread.currentThread().join();
+        }
+        catch (InterruptedException ignored) {
+        }
+        System.exit(1);
     }
 
     private static void printInventoryToFile(String inventoryOutputFilePath) {

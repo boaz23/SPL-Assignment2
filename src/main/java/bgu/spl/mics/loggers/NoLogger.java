@@ -30,6 +30,6 @@ public class NoLogger implements Logger {
 
     @Override
     public String toString() {
-        return "Empty logger";
+        return "Empty logger: this logger doesn't log anything";
     }
 }

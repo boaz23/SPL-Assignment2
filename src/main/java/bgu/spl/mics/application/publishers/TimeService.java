@@ -17,8 +17,7 @@ import java.util.TimerTask;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class TimeService extends Publisher {
-
-	private static final int time = 100;
+	private static final int TICK_MS = 100;
 	private int duration;
 	private int tick;
 	private final Object notify;
@@ -39,7 +38,7 @@ public class TimeService extends Publisher {
 		tick = 1;
 		Timer timer = new Timer(getName() + "-Timer");
 		TimerTask timerTask = new TimeTickSchedule();
-		timer.schedule(timerTask, time, time);
+		timer.schedule(timerTask, TICK_MS, TICK_MS);
 
 		//Wait for the timer to complete its tasks
 		try {
@@ -56,7 +55,7 @@ public class TimeService extends Publisher {
 	 * @return time tick duration
 	 */
 	public static int getTimeTickDuration(){
-		return time;
+		return TICK_MS;
 	}
 
 	private class TimeTickSchedule extends TimerTask{

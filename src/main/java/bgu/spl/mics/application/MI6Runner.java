@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /** This is the Main class of the application. You should parse the input file,
@@ -40,10 +41,7 @@ public class MI6Runner {
         }
 
         setLoggers();
-        Iterable<Iterable<Thread>> threads = initialize(config);
-        startAll(threads);
-        startInterrupter();
-        waitForFinish(threads);
+        start(config);
         printLogsToTerminal();
         if (!Thread.currentThread().isInterrupted()) {
             printOutputToFiles(inventoryOutputFilePath, diaryOutputFilePath);
@@ -57,6 +55,17 @@ public class MI6Runner {
         Loggers.DefaultLogger = Loggers.NoLogger;
         Loggers.MI6RunnerLogger = Loggers.StringBufferLogger;
         Loggers.MnMPLogger = Loggers.StringBufferLogger;
+    }
+
+    private static void start(Config config) {
+        List<Iterable<Thread>> splitThreads = initialize(config);
+        Iterable<Thread> threads = startAll(splitThreads);
+        startInterrupter();
+        waitForFinish(threads);
+        if (Thread.currentThread().isInterrupted()) {
+            Iterable<Thread> aliveThreads = findAllAlive(threads);
+            printAllThreads(aliveThreads);
+        }
     }
 
     private static Config loadConfig(String configFilePath) {
@@ -74,7 +83,7 @@ public class MI6Runner {
         return null;
     }
 
-    private static Iterable<Iterable<Thread>> initialize(Config config) {
+    private static List<Iterable<Thread>> initialize(Config config) {
         loadInventory(config);
         loadSquad(config);
         return initializeActiveObjects(config);
@@ -97,7 +106,7 @@ public class MI6Runner {
         Squad.getInstance().load(agents);
     }
 
-    private static Iterable<Iterable<Thread>> initializeActiveObjects(Config config) {
+    private static List<Iterable<Thread>> initializeActiveObjects(Config config) {
         Services services = config.services;
 
         Thread timeServiceThread = initializeTimeService(services);
@@ -227,33 +236,67 @@ public class MI6Runner {
         list.addAll(Arrays.asList(arr));
     }
 
-    private static void startAll(Iterable<Iterable<Thread>> threads) {
-        for (Iterable<Thread> threadsGroup : threads) {
+    private static Iterable<Thread> startAll(List<Iterable<Thread>> splitThreads) {
+        ArrayList<Thread> threads = new ArrayList<>();
+        for (Iterable<Thread> threadsGroup : splitThreads) {
             for (Thread thread : threadsGroup) {
+                threads.add(thread);
                 thread.start();
             }
 
             try {
-                Thread.sleep(5);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+
+        return threads;
     }
 
-    private static void waitForFinish(Iterable<Iterable<Thread>> threads) {
+    private static void waitForFinish(Iterable<Thread> threads) {
         try {
-            for (Iterable<Thread> threadsGroup : threads) {
-                for (Thread thread : threadsGroup) {
-                    thread.join();
-                }
+            for (Thread thread : threads) {
+                thread.join();
             }
-            Loggers.MI6RunnerLogger.append("\nDone!");
+            Loggers.MI6RunnerLogger.appendLine("\nDone!");
         } catch (InterruptedException e) {
-            Loggers.MI6RunnerLogger.append("\nInterrupted while waiting");
+            Loggers.MI6RunnerLogger.appendLine("\nInterrupted while waiting");
             Thread.currentThread().interrupt();
             e.printStackTrace();
         }
+    }
+
+    private static Iterable<Thread> findAllAlive(Iterable<Thread> threads) {
+        ArrayList<Thread> stillAlive = new ArrayList<>();
+        for (Thread thread : threads) {
+            if (thread.isAlive()) {
+                stillAlive.add(thread);
+            }
+        }
+
+        return stillAlive;
+    }
+
+    private static void printAllThreads(Iterable<Thread> threads) {
+        Loggers.MI6RunnerLogger.append("\nPrinting alive threads: [");
+        Iterator<Thread> iterator = threads.iterator();
+        if (iterator.hasNext()) {
+            Loggers.MI6RunnerLogger.appendLine("");
+            Thread next = iterator.next();
+            while (iterator.hasNext()) {
+                appendThreadName(next);
+                Loggers.MI6RunnerLogger.appendLine(",");
+                next = iterator.next();
+            }
+            appendThreadName(next);
+            Loggers.MI6RunnerLogger.appendLine("");
+        }
+        Loggers.MI6RunnerLogger.append("]");
+    }
+
+    private static void appendThreadName(Thread next) {
+        Loggers.MI6RunnerLogger.append("    " + next.getName());
     }
 
     private static void startInterrupter() {

@@ -13,7 +13,7 @@ public class Loggers {
         StringBufferLogger = new StringBufferLogger();
         FileLogger = initFileLogger("runs-output\\log.log");
 
-        DefaultLogger = StringBufferLogger;
+        DefaultLogger = NoLogger;
     }
 
     private static Logger initFileLogger(String filePath) {

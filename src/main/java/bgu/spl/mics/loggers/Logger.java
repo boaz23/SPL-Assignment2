@@ -1,5 +1,7 @@
 package bgu.spl.mics.loggers;
 
+import java.io.IOException;
+
 /**
  * Responsible for logging to a string buffer
  */
@@ -31,6 +33,8 @@ public interface Logger {
      * @return The logger instance
      */
     Logger append(Object o);
+
+    void flush() throws IOException;
 
     @Override
     String toString();

@@ -169,7 +169,7 @@ public class MessageBrokerImpl implements MessageBroker {
 		// No (further) synchronization (beyond the lock for the queues map) is needed,
 		// since after registration, the container doesn't change (for a broadcast message type)
 		for (Subscriber subscriber : subscribers) {
-			Loggers.DefaultLogger.appendLine(subscriber.getName() + " assigned " + b);
+			Loggers.DefaultLogger.appendLine(subscriber.getName() + " received " + b);
 			addMessageToSubscriberQueue(b, subscriber);
 		}
 	}

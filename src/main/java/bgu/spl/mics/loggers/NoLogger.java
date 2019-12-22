@@ -1,5 +1,7 @@
 package bgu.spl.mics.loggers;
 
+import java.io.IOException;
+
 public class NoLogger implements Logger {
     @Override
     public Logger appendLine(String s) {
@@ -19,6 +21,11 @@ public class NoLogger implements Logger {
     @Override
     public Logger append(Object o) {
         return this;
+    }
+
+    @Override
+    public void flush() throws IOException {
+
     }
 
     @Override

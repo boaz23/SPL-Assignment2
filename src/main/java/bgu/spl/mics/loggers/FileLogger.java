@@ -4,9 +4,11 @@ import java.io.*;
 
 public class FileLogger implements Logger, Closeable {
     private Writer fileWriter;
+    private final String filePath;
 
     public FileLogger(String filePath) throws IOException {
         fileWriter = new BufferedWriter(new FileWriter(filePath));
+        this.filePath = filePath;
     }
 
     @Override
@@ -52,7 +54,17 @@ public class FileLogger implements Logger, Closeable {
     }
 
     @Override
+    public void flush() throws IOException {
+        fileWriter.flush();
+    }
+
+    @Override
     public void close() throws IOException {
         fileWriter.close();
+    }
+
+    @Override
+    public String toString() {
+        return "FileLogger: '" + filePath + "'";
     }
 }

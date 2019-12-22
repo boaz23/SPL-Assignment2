@@ -44,10 +44,11 @@ public class MI6Runner {
         startInterrupter();
         waitForFinish(threads);
         printLogToTerminal();
-        if (Thread.currentThread().isInterrupted()) {
-            exit();
-        } else {
+        if (!Thread.currentThread().isInterrupted()) {
             printOutputToFiles(inventoryOutputFilePath, diaryOutputFilePath);
+        }
+        else {
+            exit();
         }
     }
 
@@ -168,7 +169,7 @@ public class MI6Runner {
     }
 
     private static Thread initializeQ(Inventory inventory) {
-        Q q = new Q(inventory);
+        Q q = new Q("Q", inventory);
         Thread qThread = new Thread(q);
         qThread.setName(q.getName());
         return qThread;
@@ -277,11 +278,6 @@ public class MI6Runner {
     }
 
     private static void exit() {
-        try {
-            Thread.currentThread().join();
-        }
-        catch (InterruptedException ignored) {
-        }
         System.exit(1);
     }
 

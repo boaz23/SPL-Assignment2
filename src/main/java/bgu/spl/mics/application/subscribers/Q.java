@@ -18,8 +18,8 @@ public class Q extends Subscriber {
 	private int lastTick;
 	private final Inventory inventory;
 
-	public Q(Inventory inventory) {
-		super("Q");
+	public Q(String name, Inventory inventory) {
+		super(name);
 		this.inventory = inventory;
 	}
 

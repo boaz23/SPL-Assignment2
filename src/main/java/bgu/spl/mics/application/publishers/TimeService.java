@@ -36,7 +36,7 @@ public class TimeService extends Publisher {
 	@Override
 	public void run() {
 		tick = 1;
-		Timer timer = new Timer(getName() + "-Timer");
+		Timer timer = new Timer(getName());
 		TimerTask timerTask = new TimeTickSchedule();
 		timer.schedule(timerTask, TICK_MS, TICK_MS);
 

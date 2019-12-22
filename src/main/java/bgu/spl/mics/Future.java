@@ -31,13 +31,11 @@ public class Future<T> {
      * @return return the result of type T if it is available, if not wait until it is available.
      */
     public T get() {
-        synchronized (this) {
-            if (isDone) {
-                return result;
-            }
-
-            return waitAndReturn();
+        if (isDone) {
+            return result;
         }
+
+        return waitAndReturn();
     }
 
     /**
@@ -73,14 +71,12 @@ public class Future<T> {
      * elapsed, return null.
      */
     public T get(long timeout, TimeUnit unit) {
-        synchronized (this) {
-            if (isDone) {
-                return result;
-            }
-
-            timeout = TimeUnit.NANOSECONDS.convert(timeout, unit);
-            return waitUntilTimeoutOrDoneAndReturn(timeout);
+        if (isDone) {
+            return result;
         }
+
+        timeout = TimeUnit.NANOSECONDS.convert(timeout, unit);
+        return waitUntilTimeoutOrDoneAndReturn(timeout);
     }
 
     private void stopBlocking() {
@@ -88,8 +84,8 @@ public class Future<T> {
     }
 
     private T waitAndReturn() {
+        T result = null;
         synchronized (this) {
-            T result = null;
             try {
                 while (shouldWait()) {
                     wait();
@@ -109,8 +105,8 @@ public class Future<T> {
     private T waitUntilTimeoutOrDoneAndReturn(long timeout) {
         TimeUnit unit = TimeUnit.NANOSECONDS;
         long startTime = 0;
+        T result = null;
         synchronized (this) {
-            T result = null;
             try {
                 while (shouldWait() && timeout > 0) {
                     startTime = System.nanoTime();

@@ -105,8 +105,9 @@ public class MessageBrokerImpl implements MessageBroker {
 			else {
 				Loggers.DefaultLogger.appendLine("No one is subbed to '" + e.getClass().getName());
 			}
-		}
-		finally {
+		} catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+		} finally {
 			eventsLock.releaseReadLock();
 		}
 
@@ -166,10 +167,12 @@ public class MessageBrokerImpl implements MessageBroker {
 		}
 	}
 
-	private <T> Future<T> roundRobinEvent(Event<T> e, EventQueue queue) {
+	private <T> Future<T> roundRobinEvent(Event<T> e, EventQueue queue) throws InterruptedException {
 		// Many threads may try to send an event of this type,
 		// we need to make sure the queue (for this type of message) stays valid
-		synchronized (queue.monitor) {
+		queue.acquireLock();
+		try {
+//		synchronized (queue.monitor) {
 			Subscriber subscriber = queue.poll();
 			if (subscriber == null) {
 				// No one is subscribed
@@ -181,6 +184,9 @@ public class MessageBrokerImpl implements MessageBroker {
 			Future<T> future = handEventToSubscriber(e, subscriber);
 			queue.add(subscriber);
 			return future;
+		}
+		finally {
+			queue.releaseLock();
 		}
 	}
 
@@ -273,6 +279,15 @@ public class MessageBrokerImpl implements MessageBroker {
 
 		public Subscriber poll() {
 			return queue.poll();
+		}
+
+		private Semaphore semaphore = new Semaphore(1, true);
+		public void acquireLock() throws InterruptedException {
+			semaphore.acquire();
+		}
+
+		public void releaseLock() {
+			semaphore.release();
 		}
 	}
 

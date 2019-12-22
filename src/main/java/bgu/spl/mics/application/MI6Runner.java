@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+// TODO: remove commented out in moneypenny and in message broker round robin
+
 /** This is the Main class of the application. You should parse the input file,
  * create the different instances of the objects, and run the system.
  * In the end, you should output serialized objects.

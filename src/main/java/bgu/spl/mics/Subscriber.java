@@ -137,7 +137,7 @@ public abstract class Subscriber extends RunnableSubPub {
                 }
             }
         } catch (InterruptedException e) {
-            terminated = true;
+            terminate();
         }
 
         Loggers.MnMPLogger.appendLine(getName() + " terminating...");

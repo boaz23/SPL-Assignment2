@@ -63,6 +63,7 @@ public class Squad {
 		try{
 			Thread.sleep(time*timeTickDuration);
 		} catch (InterruptedException ignored) {
+			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while in mission");
 			Thread.currentThread().interrupt();
 		}
 		releaseAgents(serials);

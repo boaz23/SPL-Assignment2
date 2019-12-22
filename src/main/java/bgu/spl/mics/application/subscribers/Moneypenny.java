@@ -27,11 +27,14 @@ public class Moneypenny extends Subscriber {
 	private int id;
 	private SubscribeTO subscribeTo;
 
+	private List<String> lastAcquiredAgents;
+
 	public Moneypenny(int id, SubscribeTO subscribeTo) {
 		super("Moneypenny"+ id);
 		this.id = id;
 		this.subscribeTo = subscribeTo;
 		squad = Squad.getInstance();
+		lastAcquiredAgents = null;
 	}
 
 	/**
@@ -59,8 +62,12 @@ public class Moneypenny extends Subscriber {
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		boolean agentsExist = squad.getAgents(agents);
 
+//		if (agentsExist) {
+//			lastAcquiredAgents = agents;
+//		}
 		if (Thread.currentThread().isInterrupted()) {
-			terminate();
+			Loggers.MnMPLogger.appendLine(getName() + " interrupted");
+			releaseAndTerminate();
 		}
 		else {
 			Loggers.MnMPLogger.appendLine(getName() + " completing " + aAE);
@@ -90,8 +97,15 @@ public class Moneypenny extends Subscriber {
 	}
 
 	private void lastTickBroadcastCallback(LastTickBroadcast lastTickBroadcast){
-		terminate();
+		releaseAndTerminate();
 	}
 
+	private void releaseAndTerminate() {
+//		if (lastAcquiredAgents != null) {
+//			squad.releaseAgents(lastAcquiredAgents);
+//		}
+
+		terminate();
+	}
 }
 

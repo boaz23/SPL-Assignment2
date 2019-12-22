@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.passiveObjects;
 
+import bgu.spl.mics.loggers.Loggers;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -69,9 +71,11 @@ public class Agent {
 			}
 			available = false;
 		} catch (InterruptedException e) {
+			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while waiting to acquire agent " + serialNumber);
 			Thread.currentThread().interrupt();
 		}
 	}
+
 	/**
 	 * Releases an agent.
 	 */

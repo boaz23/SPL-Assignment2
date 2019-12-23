@@ -62,9 +62,9 @@ public class Moneypenny extends Subscriber {
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		boolean agentsExist = squad.getAgents(agents);
 
-//		if (agentsExist) {
-//			lastAcquiredAgents = agents;
-//		}
+		if (agentsExist) {
+			lastAcquiredAgents = agents;
+		}
 		if (Thread.currentThread().isInterrupted()) {
 			Loggers.DefaultLogger.appendLine(getName() + " interrupted");
 			releaseAndTerminate();
@@ -101,9 +101,9 @@ public class Moneypenny extends Subscriber {
 	}
 
 	private void releaseAndTerminate() {
-//		if (lastAcquiredAgents != null) {
-//			squad.releaseAgents(lastAcquiredAgents);
-//		}
+		if (lastAcquiredAgents != null) {
+			squad.releaseAgents(lastAcquiredAgents);
+		}
 
 		terminate();
 	}

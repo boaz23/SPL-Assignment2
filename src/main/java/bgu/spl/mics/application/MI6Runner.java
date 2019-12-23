@@ -18,9 +18,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-// TODO: make Agent.acquire() fair (because it's better somehow)
-// TODO: remove commented out in moneypenny and in message broker round robin
-
 /** This is the Main class of the application. You should parse the input file,
  * create the different instances of the objects, and run the system.
  * In the end, you should output serialized objects.
@@ -44,7 +41,7 @@ public class MI6Runner {
         }
 
         setLoggers();
-        start(config);
+        run(config);
         printLogsToTerminal();
         if (!Thread.currentThread().isInterrupted()) {
             printOutputToFiles(inventoryOutputFilePath, diaryOutputFilePath);
@@ -55,19 +52,18 @@ public class MI6Runner {
     }
 
     private static void setLoggers() {
-        Loggers.DefaultLogger = Loggers.StringBufferLogger;
-        Loggers.MI6RunnerLogger = Loggers.StringBufferLogger;
+        Loggers.DefaultLogger = Loggers.NoLogger;
+        Loggers.MI6RunnerLogger = Loggers.NoLogger;
         Loggers.MnMPLogger = Loggers.NoLogger;
     }
 
-    private static void start(Config config) {
+    private static void run(Config config) {
         List<Iterable<Thread>> splitThreads = initialize(config);
         Iterable<Thread> threads = startAll(splitThreads);
-        startInterrupter();
         waitForFinish(threads);
         if (Thread.currentThread().isInterrupted()) {
             Iterable<Thread> aliveThreads = findAllAlive(threads);
-            printAllThreads(aliveThreads);
+            logThreads(aliveThreads);
         }
     }
 
@@ -129,12 +125,10 @@ public class MI6Runner {
            add(timeServiceThread);
         }};
 
-        ArrayList<Iterable<Thread>> threads = new ArrayList<Iterable<Thread>>(2) {{
+        return new ArrayList<Iterable<Thread>>(2) {{
             add(subscriberThreads);
             add(publisherThreads);
         }};
-
-        return threads;
     }
 
     private static Thread initializeTimeService(Services services) {
@@ -248,6 +242,7 @@ public class MI6Runner {
             }
 
             try {
+                // Sleep to allow every subscriber to register before the publishers
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -281,7 +276,7 @@ public class MI6Runner {
         return stillAlive;
     }
 
-    private static void printAllThreads(Iterable<Thread> threads) {
+    private static void logThreads(Iterable<Thread> threads) {
         Loggers.MI6RunnerLogger.append("\nPrinting alive threads: [");
         Iterator<Thread> iterator = threads.iterator();
         if (iterator.hasNext()) {

@@ -170,7 +170,7 @@ public class MessageBrokerImpl implements MessageBroker {
 	private <T> Future<T> roundRobinEvent(Event<T> e, EventQueue queue) throws InterruptedException {
 		// Many threads may try to send an event of this type,
 		// we need to make sure the queue (for this type of message) stays valid
-		synchronized (queue.monitor) {
+		synchronized (queue.lock) {
 			Subscriber subscriber = queue.poll();
 			if (subscriber == null) {
 				// No one is subscribed
@@ -249,29 +249,49 @@ public class MessageBrokerImpl implements MessageBroker {
 	}
 
 	/**
-	 * Holds a subscriber queue for the round robin and a monitor object used to synchronize access to the queue
+	 * Holds a subscriber queue for the round robin and a lock object used to synchronize access to the queue
 	 */
 	private static class EventQueue {
 		private Queue<Subscriber> queue;
-		private final Object monitor;
+		private final Object lock;
 
+		/**
+		 * Initializes a instance with a new queue and a lock for it
+		 */
 		public EventQueue() {
 			queue = new LinkedList<>();
-			monitor = new Object();
+			lock = new Object();
 		}
 
+		/**
+		 * Removes a subscriber from the queue
+		 * @param m The subscriber to remove
+		 */
 		public void remove(Subscriber m) {
 			queue.remove(m);
 		}
 
+		/**
+		 * @return Whether this collection contains no elements
+		 */
 		public boolean isEmpty() {
 			return queue.isEmpty();
 		}
 
+		/**
+		 * Adds a subscriber to this queue
+		 * @param m The subscriber to add
+		 */
 		public void add(Subscriber m) {
 			queue.add(m);
 		}
 
+		/**
+		 * Retrieves and removes the head of this queue,
+		 * or returns {@code null} if this queue is empty.
+		 *
+		 * @return the head of this queue, or {@code null} if this queue is empty
+		 */
 		public Subscriber poll() {
 			return queue.poll();
 		}

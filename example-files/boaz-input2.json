@@ -1,0 +1,71 @@
+{
+    "inventory": [ 
+        "Sky Hook",
+        "Dagger shoe",
+        "Knife",
+        "Pistol",
+        "Tank",
+        "Jet"
+    ],
+    "services": {
+        "M": 2,
+        "Moneypenny": 2,
+        "intelligence": [
+            {
+                "missions": [
+                    {
+                        "serialAgentsNumbers": ["007"],
+                        "duration": 4,
+                        "gadget": "Pistol",
+                        "name": "Land of Riches",
+                        "timeExpired": 5,
+                        "timeIssued": 2
+                    },
+                    {
+                        "serialAgentsNumbers": ["007"],
+                        "duration": 10,
+                        "gadget": "Sky Hook",
+                        "name": "Thunderball",
+                        "timeExpired": 15,
+                        "timeIssued": 3
+                    },
+                    {
+                        "serialAgentsNumbers": ["007"],
+                        "duration": 2,
+                        "gadget": "Dagger shoe",
+                        "name": "From Russia With Love",
+                        "timeExpired": 7,
+                        "timeIssued": 5
+                    },
+                    {
+                        "serialAgentsNumbers": ["006", "007"],
+                        "duration": 2,
+                        "gadget": "Knife",
+                        "name": "Ashan",
+                        "timeExpired": 18,
+                        "timeIssued": 7
+                    },
+                    {
+                        "serialAgentsNumbers": ["007"],
+                        "duration": 2,
+                        "gadget": "Tank",
+                        "name": "Biara's Castle",
+                        "timeExpired": 18,
+                        "timeIssued": 9
+                    }
+                ]
+            }
+        ],
+        "time": 10
+    },
+    "squad": [
+        {
+            "name": "James Bond",
+            "serialNumber": "007"
+        },
+        {
+            "name": "Somebody once",
+            "serialNumber": "006"
+        }
+    ]
+}

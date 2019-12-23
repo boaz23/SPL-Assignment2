@@ -19,6 +19,10 @@ public class Squad {
 
 	private Map<String, Agent> agents;
 
+	private Squad() {
+		this.agents = new HashMap<>();
+	}
+
 	/**
 	 * Retrieves the single instance of this class.
 	 */
@@ -33,7 +37,6 @@ public class Squad {
 	 * 						of the squad.
 	 */
 	public void load (Agent[] agents) {
-		this.agents = new HashMap<>();
 		for(Agent agent: agents){
 			this.agents.put(agent.getSerialNumber(), agent);
 		}

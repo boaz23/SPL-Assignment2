@@ -21,7 +21,7 @@ public class Diary {
 	private List<Report> reports;
 	private AtomicInteger total;
 
-	public Diary() {
+	private Diary() {
 		reports = new LinkedList<>();
 		total = new AtomicInteger(0);
 	}

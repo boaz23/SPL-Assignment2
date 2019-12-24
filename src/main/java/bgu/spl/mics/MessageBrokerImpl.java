@@ -155,12 +155,12 @@ public class MessageBrokerImpl implements MessageBroker {
 			eventsLock.acquireWriteLock();
 			EventQueue queue = subscribedEvents.computeIfAbsent(type, t -> new EventQueue());
 			queue.add(m);
+			Loggers.DefaultLogger.appendLine(m.getName() + " subscribed to " + type.getSimpleName());
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} finally {
 			eventsLock.releaseWriteLock();
 		}
-		Loggers.DefaultLogger.appendLine(m.getName() + " subscribed to " + type.getSimpleName());
 	}
 
 	private void addMessageToSubscriberQueue(Message msg, Subscriber subscriber) {

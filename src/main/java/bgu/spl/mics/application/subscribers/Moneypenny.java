@@ -84,8 +84,14 @@ public class Moneypenny extends Subscriber {
 		Loggers.DefaultLogger.appendLine(getName() + " executing mission: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		squad.sendAgents(sendAgentsEventArgs.serialAgentsNumbers(),
 				sendAgentsEventArgs.duration());
-		Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
+
+		if (!Thread.currentThread().isInterrupted()) {
+			Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
+		}
 		complete(sendAgentsEvent, null);
+		if (Thread.currentThread().isInterrupted()) {
+			terminate();
+		}
 	}
 
 	private void releaseAgentsCallback(ReleaseAgentsEvent releaseAgentsEvent){

@@ -1,6 +1,6 @@
 package bgu.spl.mics;
 
-public class Utils {
+public class TestUtils {
     /**
      * Interrupts the thread and makes sure (gracefully) it fully shuts down before proceeding
      * @param thread The thread to close

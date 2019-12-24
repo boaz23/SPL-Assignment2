@@ -59,7 +59,7 @@ public class FutureTest {
         // error margin of 2ms
         assertTrue(20 <= duration && duration <= 22, "Waited too long or too little to get the result: " + duration + "ms");
 
-        Utils.closeThread(resolver);
+        TestUtils.closeThread(resolver);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class FutureTest {
         // error margin of 2ms
         assertTrue(20 <= duration && duration <= 22, "Waited too long or too little to get the result: " + duration + "ms");
 
-        Utils.closeThread(resolver);
+        TestUtils.closeThread(resolver);
     }
 
     @Test
@@ -137,6 +137,6 @@ public class FutureTest {
         // error margin of 2ms
         assertTrue(30 <= duration && duration <= 32, "Waited too long or too little: " + duration + "ms");
 
-        Utils.closeThread(resolver);
+        TestUtils.closeThread(resolver);
     }
 }

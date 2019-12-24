@@ -96,6 +96,10 @@ public class M extends Subscriber {
 				return missionPreparation;
 			}
 		}
+		if (Thread.currentThread().isInterrupted()) {
+			missionPreparation.setStatus(ActionStatus.Terminate);
+			return missionPreparation;
+		}
 
 		if (lastTick >= missionInfo.getTimeExpired()) {
 			Loggers.MnMPLogger.appendLine(getName() + ": Time expired for mission " + missionInfo.getMissionName());

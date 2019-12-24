@@ -94,7 +94,7 @@ public class Future<T> {
                     result = this.result;
                 }
             }
-            catch (InterruptedException ignored) {
+            catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
@@ -117,7 +117,7 @@ public class Future<T> {
                     result = this.result;
                 }
             }
-            catch (InterruptedException ignored) {
+            catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 

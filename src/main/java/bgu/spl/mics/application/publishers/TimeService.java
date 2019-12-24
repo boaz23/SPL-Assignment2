@@ -48,7 +48,9 @@ public class TimeService extends Publisher {
 				timer.cancel();
 				timer.purge();
 			}
-		} catch (InterruptedException ignored) {}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	/**

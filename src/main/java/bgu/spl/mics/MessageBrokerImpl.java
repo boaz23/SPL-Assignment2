@@ -75,8 +75,8 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		eventsLock.acquireReadLock();
 		try {
+			eventsLock.acquireReadLock();
 			Loggers.DefaultLogger.appendLine(Thread.currentThread().getName() + " sending " + b);
 
 			EventQueue queue = getMessageSubscribers(b);
@@ -86,16 +86,17 @@ public class MessageBrokerImpl implements MessageBroker {
 			else {
 				Loggers.DefaultLogger.appendLine("No one is subbed to '" + b.getClass().getName());
 			}
-		}
-		finally {
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} finally {
 			eventsLock.releaseReadLock();
 		}
 	}
 
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
-		eventsLock.acquireReadLock();
 		try {
+			eventsLock.acquireReadLock();
 			Loggers.DefaultLogger.appendLine(Thread.currentThread().getName() + " sending " + e);
 
 			EventQueue queue = getMessageSubscribers(e);
@@ -122,9 +123,17 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	@Override
 	public void unregister(Subscriber m) {
-		BlockingQueue<Message> subscriberMsgQueue = removeSubscriber(m);
-		completeFutures(subscriberMsgQueue);
-		Loggers.DefaultLogger.appendLine(m.getName() + " unregistered");
+		BlockingQueue<Message> subscriberMsgQueue;
+		while (true) {
+			try {
+				subscriberMsgQueue = removeSubscriber(m);
+				completeFutures(subscriberMsgQueue);
+				Loggers.DefaultLogger.appendLine(m.getName() + " unregistered");
+				break;
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
 	}
 
 	@Override
@@ -142,12 +151,13 @@ public class MessageBrokerImpl implements MessageBroker {
 	}
 
 	private <T> void subscribeMessage(Class<? extends Message> type, Subscriber m) {
-		eventsLock.acquireWriteLock();
 		try {
+			eventsLock.acquireWriteLock();
 			EventQueue queue = subscribedEvents.computeIfAbsent(type, t -> new EventQueue());
 			queue.add(m);
-		}
-		finally {
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} finally {
 			eventsLock.releaseWriteLock();
 		}
 		Loggers.DefaultLogger.appendLine(m.getName() + " subscribed to " + type.getSimpleName());
@@ -220,14 +230,14 @@ public class MessageBrokerImpl implements MessageBroker {
 	private static <E> void putToBlockingQueue(BlockingQueue<E> queue, E e) {
 		try {
 			queue.put(e);
-		} catch (InterruptedException ignored) {
+		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
 	}
 
-	private BlockingQueue<Message> removeSubscriber(Subscriber m) {
-		eventsLock.acquireWriteLock();
+	private BlockingQueue<Message> removeSubscriber(Subscriber m) throws InterruptedException {
 		try {
+			eventsLock.acquireWriteLock();
 			BlockingQueue<Message> subscriberMsgQueue = subscriberQueues.remove(m);
 			unsubscribeFromMessages(m);
 			return subscriberMsgQueue;

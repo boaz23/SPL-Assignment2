@@ -65,8 +65,8 @@ public class Squad {
 
 		try{
 			Thread.sleep(time*timeTickDuration);
-		} catch (InterruptedException ignored) {
-//			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while in mission");
+		} catch (InterruptedException e) {
+			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while in mission");
 			Thread.currentThread().interrupt();
 		}
 		releaseAgents(serials);
@@ -84,9 +84,9 @@ public class Squad {
 			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " getting agents " + Utils.listToString(serials));
 			for (String serial : serials) {
 				if (Thread.currentThread().isInterrupted()) {
-					Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while trying to acquire " + serial);
 					break;
 				}
+
 				Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " trying to acquire " + serial);
 				Agent agent = agents.get(serial);
 				agent.acquire();

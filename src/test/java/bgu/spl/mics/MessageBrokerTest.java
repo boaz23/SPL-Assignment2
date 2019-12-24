@@ -43,7 +43,7 @@ public class MessageBrokerTest {
             fail("Waited too long");
         }
 
-        Utils.closeThread(interrupter);
+        TestUtils.closeThread(interrupter);
     }
 
     /**
@@ -74,7 +74,7 @@ public class MessageBrokerTest {
         Broadcast broadcast = new MockBroadcast();
 
         testSendBroadcast_registerAndSend(s1, s2, s3, broadcast);
-        testSendBroadcast_assertRecieved(s1, s2, broadcast);
+        testSendBroadcast_assertReceived(s1, s2, broadcast);
         testSendBroadcast_assertWaitingTilInterrupt(s3);
     }
 
@@ -98,7 +98,7 @@ public class MessageBrokerTest {
 
         }
 
-        Utils.closeThread(interrupter);
+        TestUtils.closeThread(interrupter);
     }
 
     private void testSendBroadcast_assertWaitingTilInterrupt(Subscriber s3) {
@@ -110,10 +110,10 @@ public class MessageBrokerTest {
         } catch (InterruptedException ignored) {
         }
 
-        Utils.closeThread(interrupter);
+        TestUtils.closeThread(interrupter);
     }
 
-    private void testSendBroadcast_assertRecieved(Subscriber s1, Subscriber s2, Broadcast broadcast) {
+    private void testSendBroadcast_assertReceived(Subscriber s1, Subscriber s2, Broadcast broadcast) {
         Message receivedBroadcast;
         try {
             receivedBroadcast = messageBroker.awaitMessage(s2);

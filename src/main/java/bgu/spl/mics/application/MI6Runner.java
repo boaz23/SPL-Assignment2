@@ -210,7 +210,7 @@ public class MI6Runner {
 
     private static void initializeMoneypennies(Thread[] moneypennyThreads) {
         int count = moneypennyThreads.length;
-        int missionHandlersCount = (count / 2) + (count % 2);
+        int missionHandlersCount = (count / 2);
         int agentManagersCount = count - missionHandlersCount;
         int iNext = 0;
         iNext = initializeMoneypennies(moneypennyThreads, iNext, missionHandlersCount, Moneypenny.SubscribeTO.SendAndRelease);

@@ -1,9 +1,9 @@
 package bgu.spl.mics;
 
 public interface ReadWriteLock {
-    void acquireReadLock() throws InterruptedException;
+    void acquireReadLock();
     void releaseReadLock();
 
-    void acquireWriteLock() throws InterruptedException;
+    void acquireWriteLock();
     void releaseWriteLock();
 }

@@ -85,12 +85,12 @@ public class Moneypenny extends Subscriber {
 		squad.sendAgents(sendAgentsEventArgs.serialAgentsNumbers(),
 				sendAgentsEventArgs.duration());
 
-		if (!Thread.currentThread().isInterrupted()) {
-			Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
-		}
-		complete(sendAgentsEvent, null);
 		if (Thread.currentThread().isInterrupted()) {
+			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while in mission " + sendAgentsEvent.getArgs().getMissionName());
 			terminate();
+		} else {
+			Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
+			complete(sendAgentsEvent, null);
 		}
 	}
 

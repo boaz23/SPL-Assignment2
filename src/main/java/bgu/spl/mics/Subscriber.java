@@ -140,8 +140,8 @@ public abstract class Subscriber extends RunnableSubPub {
             terminate();
         }
 
-        Loggers.MnMPLogger.appendLine(getName() + " terminating...");
         messageBroker.unregister(this);
+        Loggers.MnMPLogger.appendLine(getName() + " terminating...");
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

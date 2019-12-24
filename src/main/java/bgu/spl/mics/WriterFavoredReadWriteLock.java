@@ -12,7 +12,7 @@ public class WriterFavoredReadWriteLock implements ReadWriteLock {
     /**
      * Acquires a read lock. This method is blocking until it is possible to acquire the lock.
      */
-    public void acquireReadLock() throws InterruptedException {
+    public void acquireReadLock() {
         beforeRead();
     }
 
@@ -26,7 +26,7 @@ public class WriterFavoredReadWriteLock implements ReadWriteLock {
     /**
      * Acquires a write lock. This method is blocking until it is possible to acquire the lock.
      */
-    public void acquireWriteLock() throws InterruptedException {
+    public void acquireWriteLock() {
         beforeWrite();
     }
 
@@ -45,10 +45,10 @@ public class WriterFavoredReadWriteLock implements ReadWriteLock {
         return activeReaders == 0 && activeWriters == 0;
     }
 
-    private synchronized void beforeRead() throws InterruptedException {
+    private synchronized void beforeRead() {
         ++waitingReaders;
         while (!allowReader())
-            wait();
+            try { wait(); } catch (InterruptedException ignored) {}
         --waitingReaders;
         ++activeReaders;
     }
@@ -58,10 +58,10 @@ public class WriterFavoredReadWriteLock implements ReadWriteLock {
         notifyAll();  // Will unblock any pending writer
     }
 
-    private synchronized void beforeWrite() throws InterruptedException {
+    private synchronized void beforeWrite() {
         ++waitingWriters;
         while (!allowWriter())
-            wait();
+            try { wait(); } catch (InterruptedException ignored) {}
         --waitingWriters;
         ++activeWriters;
     }

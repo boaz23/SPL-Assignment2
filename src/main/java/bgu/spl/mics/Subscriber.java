@@ -137,6 +137,7 @@ public abstract class Subscriber extends RunnableSubPub {
                 }
             }
         } catch (InterruptedException e) {
+            Loggers.DefaultLogger.appendLine(getName() + " interrupted");
             terminate();
         }
 

@@ -37,6 +37,7 @@ public class MockMessageBroker implements MessageBroker {
         subscriberSubscribedMessages.get(s).add(type);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> void complete(Event<T> e, T result) {
         if (!futureMap.containsKey(e)) {

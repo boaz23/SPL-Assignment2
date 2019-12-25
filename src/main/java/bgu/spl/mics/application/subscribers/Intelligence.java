@@ -34,7 +34,7 @@ public class Intelligence extends Subscriber {
 		subscribeBroadcast(LastTickBroadcast.class, this::lastTickBroadcast);
 	}
 
-	private void TickBroadcastCallBack(TickBroadcast tick){
+	private void TickBroadcastCallBack(TickBroadcast tick) throws InterruptedException {
 		int tickTime = tick.getTick();
 		LinkedList<MissionInfo> list =  missionInfos.getOrDefault(tickTime, null);
 		if(list != null){

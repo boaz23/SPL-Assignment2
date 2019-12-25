@@ -57,14 +57,9 @@ public class Squad {
 	 * simulates executing a mission by calling sleep.
 	 * @param time   milliseconds to sleep
 	 */
-	public void sendAgents(List<String> serials, int time){
+	public void sendAgents(List<String> serials, int time) throws InterruptedException {
 		int timeTickDuration = TimeService.getTimeTickDuration();
-
-		try{
-			Thread.sleep(time*timeTickDuration);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
+		Thread.sleep(time*timeTickDuration);
 		releaseAgents(serials);
 	}
 
@@ -73,7 +68,7 @@ public class Squad {
 	 * @param serials   the serial numbers of the agents
 	 * @return ‘false’ if an agent of serialNumber ‘serial’ is missing, and ‘true’ otherwise
 	 */
-	public boolean getAgents(List<String> serials){
+	public boolean getAgents(List<String> serials) throws InterruptedException {
 		boolean allExist = checkAllExist(serials);
 		if(allExist) {
 			serials.sort(String.CASE_INSENSITIVE_ORDER);

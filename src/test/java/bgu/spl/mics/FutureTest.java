@@ -19,7 +19,7 @@ public class FutureTest {
     /*
     Tests that trying to fetch the result after resolving returns immediately (using indefinitely blocking get)
      */
-    public void simpleResolveGet() {
+    public void simpleResolveGet() throws InterruptedException {
         assertFalse(future.isDone(), "Done before resolved");
         future.resolve(5);
         long start = System.currentTimeMillis();
@@ -37,7 +37,7 @@ public class FutureTest {
     /*
     Tests that trying to fetch the result blocks the calling thread until future is resolved (using indefinitely blocking get)
      */
-    public void blockingGet() {
+    public void blockingGet() throws InterruptedException {
         assertFalse(future.isDone(), "Done before resolved");
         Thread resolver = new Thread(() -> {
             try {
@@ -66,7 +66,7 @@ public class FutureTest {
     /*
     Tests that trying to fetch the result after resolving returns immediately (using the timed get)
      */
-    public void immediateTimedResolveGet() {
+    public void immediateTimedResolveGet() throws InterruptedException {
         assertFalse(future.isDone(), "Done before resolved");
 
         future.resolve(5);
@@ -86,7 +86,7 @@ public class FutureTest {
     Tests that trying to fetch the result blocks the calling thread until future is resolved (using the timed get)
     (and that it stops waiting for the result even before the timeout expired if the result is available)
      */
-    public void timedGet_notWaitingTilTimoutWhenResolved() {
+    public void timedGet_notWaitingTilTimoutWhenResolved() throws InterruptedException {
         assertFalse(future.isDone(), "Done before resolved");
         Thread resolver = new Thread(() -> {
             try {
@@ -115,7 +115,7 @@ public class FutureTest {
     /*
     Tests that trying to fetch the result times out if the future isn't resolved in time
      */
-    public void timedGet_timeout() {
+    public void timedGet_timeout() throws InterruptedException {
         assertFalse(future.isDone(), "Done before resolved");
         Thread resolver = new Thread(() -> {
             try {

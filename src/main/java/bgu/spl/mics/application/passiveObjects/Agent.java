@@ -64,7 +64,7 @@ public class Agent {
 	/**
 	 * Acquires an agent.
 	 */
-	public synchronized void acquire() {
+	public synchronized void acquire() throws InterruptedException {
 		try {
 			while (!available) {
 				wait();
@@ -72,7 +72,7 @@ public class Agent {
 			available = false;
 		} catch (InterruptedException e) {
 			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while waiting to acquire agent " + serialNumber);
-			Thread.currentThread().interrupt();
+			throw e;
 		}
 	}
 

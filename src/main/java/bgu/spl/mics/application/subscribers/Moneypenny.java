@@ -59,7 +59,7 @@ public class Moneypenny extends Subscriber {
 	 * CallBack function to handle the AgentAvaibleEvent
 	 * @param aAE AgentsAvailableEvent
 	 */
-	private void agentsAvailableCallback(AgentsAvailableEvent aAE){
+	private void agentsAvailableCallback(AgentsAvailableEvent aAE) throws InterruptedException {
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		boolean agentsExist = squad.getAgents(agents);
 		releaser.notifyHelpers();
@@ -76,7 +76,7 @@ public class Moneypenny extends Subscriber {
 		}
 	}
 
-	private void sendAgentsCallback(SendAgentsEvent sendAgentsEvent){
+	private void sendAgentsCallback(SendAgentsEvent sendAgentsEvent) throws InterruptedException {
 		Loggers.MnMPLogger.appendLine(getName() + " handling " + sendAgentsEvent);
 
 		SendAgentsEventArgs sendAgentsEventArgs = sendAgentsEvent.getArgs();
@@ -101,11 +101,11 @@ public class Moneypenny extends Subscriber {
 		complete(releaseAgentsEvent, null);
 	}
 
-	private void lastTickBroadcastCallback(LastTickBroadcast lastTickBroadcast){
+	private void lastTickBroadcastCallback(LastTickBroadcast lastTickBroadcast) throws InterruptedException {
 		cleanupAndTerminate();
 	}
 
-	private void cleanupAndTerminate() {
+	private void cleanupAndTerminate() throws InterruptedException {
 		if (subscribeTo == SubscribeTO.AgentsAvailable) {
 			releaser.decrement();
 		}
@@ -116,16 +116,11 @@ public class Moneypenny extends Subscriber {
 		terminate();
 	}
 
-	private void helpReleaseAgents() {
+	private void helpReleaseAgents() throws InterruptedException {
 		synchronized (releaser) {
 			while (releaser.count() > 0) {
 				releaseAllAgents();
-				try {
-					releaser.awaitRelease();
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					break;
-				}
+				releaser.awaitRelease();
 			}
 		}
 	}

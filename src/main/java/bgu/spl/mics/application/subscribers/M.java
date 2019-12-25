@@ -46,7 +46,7 @@ public class M extends Subscriber {
 		lastTick = b.getTick();
 	}
 
-	private void onMissionReceived(MissionReceivedEvent e) {
+	private void onMissionReceived(MissionReceivedEvent e) throws InterruptedException {
 		Loggers.MnMPLogger.appendLine(getName() + " handling on tick " + lastTick + ": " + e);
 
 		MissionInfo missionInfo = e.getMissionInfo();
@@ -76,7 +76,7 @@ public class M extends Subscriber {
 		}
 	}
 
-	private MissionPreparation checkValidity(MissionInfo missionInfo) {
+	private MissionPreparation checkValidity(MissionInfo missionInfo) throws InterruptedException {
 		MissionPreparation missionPreparation = new MissionPreparation();
 		MissionPreparationNeedProvider<?>[] missionNeeds = new MissionPreparationNeedProvider<?>[] {
 			new AgentsNeedProvider(missionInfo, missionPreparation),
@@ -112,12 +112,12 @@ public class M extends Subscriber {
 		return missionPreparation;
 	}
 
-	private void releaseAgents(MissionInfo missionInfo) {
+	private void releaseAgents(MissionInfo missionInfo) throws InterruptedException {
 		List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();
 		sendEvent(new ReleaseAgentsEvent(new ReleaseAgentsEventArgs(agentsSerialNumbers)));
 	}
 
-	private void sendAgents(MissionInfo missionInfo) {
+	private void sendAgents(MissionInfo missionInfo) throws InterruptedException {
 		List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();
 		int duration = missionInfo.getDuration();
 		String missionName = missionInfo.getMissionName();
@@ -145,7 +145,7 @@ public class M extends Subscriber {
 		}
 
 		@Override
-		protected Future<AgentsAvailableResult> seekNeedInformation() {
+		protected Future<AgentsAvailableResult> seekNeedInformation() throws InterruptedException {
 			List<String> agentsSerialNumbers = missionInfo.getSerialAgentsNumbers();
 			return sendEvent(new AgentsAvailableEvent(new AgentsAvailableEventArgs(agentsSerialNumbers)));
 		}
@@ -177,7 +177,7 @@ public class M extends Subscriber {
 		}
 
 		@Override
-		protected Future<GadgetAvailableResult> seekNeedInformation() {
+		protected Future<GadgetAvailableResult> seekNeedInformation() throws InterruptedException {
 			String gadget = missionInfo.getGadget();
 			return sendEvent(new GadgetAvailableEvent(new GadgetAvailableEventArgs(gadget)));
 		}
@@ -223,7 +223,7 @@ public class M extends Subscriber {
 		 * Tries to send events to check a prerequisite of the mission
 		 * @return Whether the need has been fulfilled and M can continue fulfilling the rest of the prerequisites
 		 */
-		public boolean tryFulfillNeed() {
+		public boolean tryFulfillNeed() throws InterruptedException {
 			T result = sendNeedFulfillRequest();
 			if (result == null) {
 				missionPreparation.setStatus(ActionStatus.Terminate);
@@ -242,7 +242,7 @@ public class M extends Subscriber {
 		 * Send event to get the information from other objects
 		 * @return The future for this information
 		 */
-		protected abstract Future<T> seekNeedInformation();
+		protected abstract Future<T> seekNeedInformation() throws InterruptedException;
 
 		/**
 		 * Update the mission preparation object with newly received information
@@ -255,7 +255,7 @@ public class M extends Subscriber {
 		 */
 		protected abstract boolean hasBeenFulfilled();
 
-		private T sendNeedFulfillRequest() {
+		private T sendNeedFulfillRequest() throws InterruptedException {
 			T result = null;
 			for (int i = 0; i < MAX_MISSION_NEED_TRIES; ++i) {
 				Future<T> future = seekNeedInformation();

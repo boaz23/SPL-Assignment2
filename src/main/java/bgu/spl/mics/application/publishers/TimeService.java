@@ -1,5 +1,6 @@
 package bgu.spl.mics.application.publishers;
 
+import bgu.spl.mics.Broadcast;
 import bgu.spl.mics.Publisher;
 import bgu.spl.mics.application.messages.LastTickBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
@@ -70,7 +71,6 @@ public class TimeService extends Publisher {
 				TickBroadcast tickBroadcast = new TickBroadcast(tick);
 				sendBroadcast(tickBroadcast);
 				tick = tick +1;
-
 			} else {
 				Loggers.MI6RunnerLogger.appendLine(getName() + " sending last tick");
 				LastTickBroadcast lastTickBroadcast = new LastTickBroadcast(tick);
@@ -78,6 +78,13 @@ public class TimeService extends Publisher {
 				synchronized (notify){
 					notify.notifyAll();
 				}
+			}
+		}
+
+		private void sendBroadcast(Broadcast b) {
+			try {
+				TimeService.this.sendBroadcast(b);
+			} catch (InterruptedException ignored) {
 			}
 		}
 	}

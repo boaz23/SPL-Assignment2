@@ -46,7 +46,7 @@ abstract class RunnableSubPub implements Runnable {
      * @param <T> The event's result type
      * @return A future for the result
      */
-    protected <T> Future<T> sendEvent(Event<T> e) {
+    protected <T> Future<T> sendEvent(Event<T> e) throws InterruptedException {
         return simplePublisher.sendEvent(e);
     }
 
@@ -54,7 +54,7 @@ abstract class RunnableSubPub implements Runnable {
      * Sends a broadcast
      * @param b The broadcast to send
      */
-    protected void sendBroadcast(Broadcast b) {
+    protected void sendBroadcast(Broadcast b) throws InterruptedException {
         simplePublisher.sendBroadcast(b);
     }
 }

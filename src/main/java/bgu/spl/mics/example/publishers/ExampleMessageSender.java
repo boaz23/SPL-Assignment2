@@ -25,14 +25,28 @@ public class ExampleMessageSender extends Subscriber {
     protected void initialize() {
         System.out.println("Sender " + getName() + " started");
         if (broadcast) {
-            getSimplePublisher().sendBroadcast(new ExampleBroadcast(getName()));
+            try {
+                getSimplePublisher().sendBroadcast(new ExampleBroadcast(getName()));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             System.out.println("Sender " + getName() + " publish an event and terminate");
             terminate();
         } else {
-            Future<String> futureObject = getSimplePublisher().sendEvent(new ExampleEvent(getName()));
+            Future<String> futureObject = null;
+            try {
+                futureObject = getSimplePublisher().sendEvent(new ExampleEvent(getName()));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (futureObject != null) {
-            	String resolved = futureObject.get(100, TimeUnit.MILLISECONDS);
-            	if (resolved != null) {
+                String resolved = null;
+                try {
+                    resolved = futureObject.get(100, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (resolved != null) {
             		System.out.println("Completed processing the event, its result is \"" + resolved + "\" - success");
             	}
             	else {

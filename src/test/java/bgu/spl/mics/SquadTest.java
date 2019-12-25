@@ -73,7 +73,7 @@ public class SquadTest {
     /*
     Tests that getting agents which do no exists result in returning false (as defined)
      */
-    public void testGetAgents_invalidSerialNumber() {
+    public void testGetAgents_invalidSerialNumber() throws InterruptedException {
         agentSerialNums = new ArrayList<String>() {{
             add("007");
         }};
@@ -86,7 +86,7 @@ public class SquadTest {
     Tests that the availability of every (existing) agent passed to @see getAgents does not change
     if an invalid agent was passed to it (even if some were unavailable)
      */
-    public void testGetAgents_availableDoesntChangeOnInvalidSerialNumber() {
+    public void testGetAgents_availableDoesntChangeOnInvalidSerialNumber() throws InterruptedException {
         agents[0].acquire();
         agentSerialNums = new ArrayList<String>() {{
             add("001");
@@ -104,7 +104,7 @@ public class SquadTest {
     Tests that the getAgents exits correctly and that the availability of the agents
      passed it stays unchanged when every agent passed to is available beforehand
      */
-    public void testGetAgents_allRelased() {
+    public void testGetAgents_allRelased() throws InterruptedException {
         agentSerialNums = new ArrayList<String>() {{
             add("000");
             add("001");
@@ -119,7 +119,7 @@ public class SquadTest {
     /*
     Tests that getAgents waits for the agents to become available if they're not beforehand
      */
-    public void testGetAgents_waitsForAvailability() {
+    public void testGetAgents_waitsForAvailability() throws InterruptedException {
         agentSerialNums = new ArrayList<String>() {{
             add("000");
             add("001");
@@ -158,7 +158,7 @@ public class SquadTest {
     /*
     Tests that releaseAgents release all and only the agents it gets passed as arguments
      */
-    public void testReleaseAgents() {
+    public void testReleaseAgents() throws InterruptedException {
         agentSerialNums = new ArrayList<String>() {{
             add("002");
             add("001");
@@ -178,7 +178,7 @@ public class SquadTest {
     Tests that sendAgents releases all and only the agents it gets passed as arguments
     and that it blocks for exactly the amount of time specified in the time argument.
      */
-    public void testSendAgents_allReleased() {
+    public void testSendAgents_allReleased() throws InterruptedException {
         agentSerialNums = new ArrayList<String>() {{
             add("000");
             add("002");

@@ -22,7 +22,7 @@ public class MessageBrokerTest {
      * subscribing to event, sending an event and awaiting for a message.
      */
     @Test
-    public void testReceiveAndCompleteEvent() {
+    public void testReceiveAndCompleteEvent() throws InterruptedException {
         Subscriber subscriber = new MockSubscriber();
         Event<Integer> event = new MockEvent();
 
@@ -50,7 +50,7 @@ public class MessageBrokerTest {
      * Tests the unregistering works. e.g. that the subscriber stops receiving events
      */
     @Test
-    public void testUnregister() {
+    public void testUnregister() throws InterruptedException {
         Subscriber subscriber = new MockSubscriber();
         Event<Integer> event = new MockEvent();
 
@@ -67,7 +67,7 @@ public class MessageBrokerTest {
      * that is subscribed to that broadcast type (and only them)
      */
     @Test
-    public void testSendBroadcast() {
+    public void testSendBroadcast() throws InterruptedException {
         Subscriber s1 = new MockSubscriber("s1");
         Subscriber s2 = new MockSubscriber("s2");
         Subscriber s3 = new MockSubscriber("s3");
@@ -126,7 +126,7 @@ public class MessageBrokerTest {
     }
 
     private void testSendBroadcast_registerAndSend(Subscriber s1, Subscriber s2,
-                                                   Subscriber s3, Broadcast broadcast) {
+                                                   Subscriber s3, Broadcast broadcast) throws InterruptedException {
         messageBroker.register(s1);
         messageBroker.register(s2);
         messageBroker.register(s3);

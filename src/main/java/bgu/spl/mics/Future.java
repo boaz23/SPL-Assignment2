@@ -30,7 +30,7 @@ public class Future<T> {
      *
      * @return return the result of type T if it is available, if not wait until it is available.
      */
-    public T get() {
+    public T get() throws InterruptedException {
         if (isDone) {
             return result;
         }
@@ -70,7 +70,7 @@ public class Future<T> {
      * wait for {@code timeout} TimeUnits {@code unit}. If time has
      * elapsed, return null.
      */
-    public T get(long timeout, TimeUnit unit) {
+    public T get(long timeout, TimeUnit unit) throws InterruptedException {
         if (isDone) {
             return result;
         }
@@ -83,49 +83,40 @@ public class Future<T> {
         notifyAll();
     }
 
-    private T waitAndReturn() {
+    private T waitAndReturn() throws InterruptedException {
+        synchronized (this) {
+            while (shouldWait()) {
+                wait();
+            }
+
+            return this.result;
+        }
+    }
+
+    private T waitUntilTimeoutOrDoneAndReturn(long timeout) throws InterruptedException {
+        TimeUnit unit = TimeUnit.NANOSECONDS;
         T result = null;
         synchronized (this) {
-            try {
-                while (shouldWait()) {
-                    wait();
-                }
-                if (isDone) {
-                    result = this.result;
-                }
+            while (shouldWait() && timeout > 0) {
+                timeout = timedWait(timeout, unit);
             }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+
+            if (isDone) {
+                result = this.result;
             }
 
             return result;
         }
     }
 
-    private T waitUntilTimeoutOrDoneAndReturn(long timeout) {
-        TimeUnit unit = TimeUnit.NANOSECONDS;
-        long startTime = 0;
-        T result = null;
-        synchronized (this) {
-            try {
-                while (shouldWait() && timeout > 0) {
-                    startTime = System.nanoTime();
-                    unit.timedWait(this, timeout);
-                    timeout -= (System.nanoTime() - startTime);
-                }
-                if (isDone) {
-                    result = this.result;
-                }
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            return result;
-        }
+    private long timedWait(long timeout, TimeUnit unit) throws InterruptedException {
+        long startTime = System.nanoTime();
+        unit.timedWait(this, timeout);
+        timeout -= (System.nanoTime() - startTime);
+        return timeout;
     }
 
     private boolean shouldWait() {
-        return !isDone && !Thread.currentThread().isInterrupted();
+        return !isDone;
     }
 }

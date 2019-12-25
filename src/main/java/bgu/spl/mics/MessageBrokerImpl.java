@@ -74,7 +74,7 @@ public class MessageBrokerImpl implements MessageBroker {
 	}
 
 	@Override
-	public void sendBroadcast(Broadcast b) {
+	public void sendBroadcast(Broadcast b) throws InterruptedException {
 		eventsLock.acquireReadLock();
 		try {
 			Loggers.DefaultLogger.appendLine(Thread.currentThread().getName() + " sending " + b);
@@ -92,7 +92,7 @@ public class MessageBrokerImpl implements MessageBroker {
 	}
 
 	@Override
-	public <T> Future<T> sendEvent(Event<T> e) {
+	public <T> Future<T> sendEvent(Event<T> e) throws InterruptedException {
 		try {
 			eventsLock.acquireReadLock();
 			Loggers.DefaultLogger.appendLine(Thread.currentThread().getName() + " sending " + e);
@@ -104,8 +104,6 @@ public class MessageBrokerImpl implements MessageBroker {
 			else {
 				Loggers.DefaultLogger.appendLine("No one is subbed to '" + e.getClass().getName());
 			}
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
 		} finally {
 			eventsLock.releaseReadLock();
 		}
@@ -152,12 +150,12 @@ public class MessageBrokerImpl implements MessageBroker {
 		}
 	}
 
-	private void addMessageToSubscriberQueue(Message msg, Subscriber subscriber) {
+	private void addMessageToSubscriberQueue(Message msg, Subscriber subscriber) throws InterruptedException {
 		BlockingQueue<Message> queue = getSubscriberQueue(subscriber);
 		putToBlockingQueue(queue, msg);
 	}
 
-	private void addBroadcastToSubscriberQueues(Broadcast b, EventQueue queue) {
+	private void addBroadcastToSubscriberQueues(Broadcast b, EventQueue queue) throws InterruptedException {
 		// No (further) synchronization (beyond the lock for the queues map) is needed,
 		// since after registration, the container doesn't change (for a broadcast message type)
 		for (Subscriber subscriber : queue.queue) {
@@ -184,7 +182,7 @@ public class MessageBrokerImpl implements MessageBroker {
 		}
 	}
 
-	private <T> Future<T> handEventToSubscriber(Event<T> e, Subscriber subscriber) {
+	private <T> Future<T> handEventToSubscriber(Event<T> e, Subscriber subscriber) throws InterruptedException {
 		Future<T> future = new Future<>();
 		futures.put(e, future);
 		addMessageToSubscriberQueue(e, subscriber);
@@ -216,12 +214,8 @@ public class MessageBrokerImpl implements MessageBroker {
 	 * @param e The item to put into the queue
 	 * @param <E> The item's type
 	 */
-	private static <E> void putToBlockingQueue(BlockingQueue<E> queue, E e) {
-		try {
-			queue.put(e);
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
+	private static <E> void putToBlockingQueue(BlockingQueue<E> queue, E e) throws InterruptedException {
+		queue.put(e);
 	}
 
 	private BlockingQueue<Message> removeSubscriber(Subscriber m) {

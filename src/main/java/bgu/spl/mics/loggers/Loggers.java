@@ -5,7 +5,6 @@ import java.io.IOException;
 public class Loggers {
     public static Logger NoLogger;
     public static Logger StringBufferLogger;
-    public static Logger FileLogger;
 
     public static Logger DefaultLogger;
     public static Logger MI6RunnerLogger;
@@ -14,7 +13,6 @@ public class Loggers {
     static {
         NoLogger = new NoLogger();
         StringBufferLogger = new StringBufferLogger();
-        FileLogger = initFileLogger("runs-output/run.log");
 
         DefaultLogger = NoLogger;
         MI6RunnerLogger = NoLogger;

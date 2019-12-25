@@ -11,6 +11,7 @@ import bgu.spl.mics.application.subscribers.Moneypenny;
 import bgu.spl.mics.application.subscribers.Q;
 import bgu.spl.mics.loggers.Logger;
 import bgu.spl.mics.loggers.Loggers;
+import bgu.spl.mics.loggers.StringBufferLogger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -48,12 +49,10 @@ public class MI6Runner {
         if (!Thread.currentThread().isInterrupted()) {
             printOutputToFiles(inventoryOutputFilePath, diaryOutputFilePath);
         }
-        else {
-            exit();
-        }
     }
 
     private static void setLoggers() {
+        Loggers.StringBufferLogger = new StringBufferLogger();
         Loggers.DefaultLogger = Loggers.StringBufferLogger;
         Loggers.MI6RunnerLogger = Loggers.StringBufferLogger;
         Loggers.MnMPLogger = Loggers.StringBufferLogger;
@@ -65,12 +64,15 @@ public class MI6Runner {
         CountDownLatch subRegisterAwaiter = init.getSecond();
 
         Iterable<Thread> threads = startAll(splitThreads, subRegisterAwaiter);
-        startInterrupter();
         waitForFinish(threads);
         if (Thread.currentThread().isInterrupted()) {
-            Iterable<Thread> aliveThreads = findAllAlive(threads);
-            logThreads(aliveThreads);
+            logAllAliveThreads(threads);
         }
+    }
+
+    private static void logAllAliveThreads(Iterable<Thread> threads) {
+        Iterable<Thread> aliveThreads = findAllAlive(threads);
+        logThreads(aliveThreads);
     }
 
     private static Config loadConfig(String configFilePath) {

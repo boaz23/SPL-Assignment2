@@ -3,9 +3,9 @@ package bgu.spl.mics.loggers;
 import java.io.IOException;
 
 public class Loggers {
-    public static final Logger NoLogger;
-    public static final Logger StringBufferLogger;
-    public static final Logger FileLogger;
+    public static Logger NoLogger;
+    public static Logger StringBufferLogger;
+    public static Logger FileLogger;
 
     public static Logger DefaultLogger;
     public static Logger MI6RunnerLogger;

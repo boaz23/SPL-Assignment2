@@ -14,7 +14,7 @@ public class Loggers {
     static {
         NoLogger = new NoLogger();
         StringBufferLogger = new StringBufferLogger();
-        FileLogger = initFileLogger("runs-output\\log.log");
+        FileLogger = initFileLogger("runs-output/run.log");
 
         DefaultLogger = NoLogger;
         MI6RunnerLogger = NoLogger;

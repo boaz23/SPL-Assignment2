@@ -1,5 +1,6 @@
 package bgu.spl.mics.application;
 
+import bgu.spl.mics.Tuple;
 import bgu.spl.mics.application.config.*;
 import bgu.spl.mics.application.passiveObjects.*;
 import bgu.spl.mics.application.passiveObjects.Agent;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /** This is the Main class of the application. You should parse the input file,
  * create the different instances of the objects, and run the system.
@@ -58,8 +60,11 @@ public class MI6Runner {
     }
 
     private static void run(Config config) {
-        List<Iterable<Thread>> splitThreads = initialize(config);
-        Iterable<Thread> threads = startAll(splitThreads);
+        Tuple<List<Iterable<Thread>>, CountDownLatch> init = initialize(config);
+        List<Iterable<Thread>> splitThreads = init.getFirst();
+        CountDownLatch subRegisterAwaiter = init.getSecond();
+
+        Iterable<Thread> threads = startAll(splitThreads, subRegisterAwaiter);
         startInterrupter();
         waitForFinish(threads);
         if (Thread.currentThread().isInterrupted()) {
@@ -83,7 +88,7 @@ public class MI6Runner {
         return null;
     }
 
-    private static List<Iterable<Thread>> initialize(Config config) {
+    private static Tuple<List<Iterable<Thread>>, CountDownLatch> initialize(Config config) {
         loadInventory(config);
         loadSquad(config);
         return initializeActiveObjects(config);
@@ -106,16 +111,17 @@ public class MI6Runner {
         Squad.getInstance().load(agents);
     }
 
-    private static List<Iterable<Thread>> initializeActiveObjects(Config config) {
+    private static Tuple<List<Iterable<Thread>>, CountDownLatch> initializeActiveObjects(Config config) {
         Services services = config.services;
+        int subCount = services.intelligence.length + 1 + services.M + services.Moneypenny;
+        CountDownLatch subRegisterAwaiter = new CountDownLatch(subCount);
 
         Thread timeServiceThread = initializeTimeService(services);
-        Thread[] intelligenceThreads = initializeIntelligences(services);
-        Thread qThread = initializeQ(Inventory.getInstance());
-        Thread[] mThreads = initializeMs(services, Diary.getInstance());
-        Thread[] moneypennyThreads = initializeMoneypennies(services);
+        Thread[] intelligenceThreads = initializeIntelligences(services, subRegisterAwaiter);
+        Thread qThread = initializeQ(Inventory.getInstance(), subRegisterAwaiter);
+        Thread[] mThreads = initializeMs(services, Diary.getInstance(), subRegisterAwaiter);
+        Thread[] moneypennyThreads = initializeMoneypennies(services, subRegisterAwaiter);
 
-        int subCount = intelligenceThreads.length + 1 + mThreads.length + moneypennyThreads.length;
         ArrayList<Thread> subscriberThreads = new ArrayList<>(subCount);
         subscriberThreads.add(qThread);
         addAll(subscriberThreads, moneypennyThreads);
@@ -126,10 +132,11 @@ public class MI6Runner {
            add(timeServiceThread);
         }};
 
-        return new ArrayList<Iterable<Thread>>(2) {{
+        ArrayList<Iterable<Thread>> threads = new ArrayList<Iterable<Thread>>(2) {{
             add(subscriberThreads);
             add(publisherThreads);
         }};
+        return new Tuple<>(threads, subRegisterAwaiter);
     }
 
     private static Thread initializeTimeService(Services services) {
@@ -139,21 +146,21 @@ public class MI6Runner {
         return timeServiceThread;
     }
 
-    private static Thread[] initializeIntelligences(Services services) {
+    private static Thread[] initializeIntelligences(Services services, CountDownLatch subRegisterAwaiter) {
         bgu.spl.mics.application.config.Intelligence[] intelligenceObjs = services.intelligence;
         Thread[] intelligenceThreads = new Thread[intelligenceObjs.length];
         for (int i = 0; i < intelligenceObjs.length; i++) {
-            Intelligence intelligence = initializeIntelligence(intelligenceObjs[i], i + 1);
+            Intelligence intelligence = initializeIntelligence(intelligenceObjs[i], i + 1, subRegisterAwaiter);
             intelligenceThreads[i] = initializeIntelligenceThread(intelligence);
         }
 
         return intelligenceThreads;
     }
 
-    private static Intelligence initializeIntelligence(bgu.spl.mics.application.config.Intelligence intelligenceObj, int id) {
+    private static Intelligence initializeIntelligence(bgu.spl.mics.application.config.Intelligence intelligenceObj, int id, CountDownLatch subRegisterAwaiter) {
         String name = "Intelligence" + id;
         MissionInfo[] missionInfos = initializeMissionInfos(intelligenceObj.missions);
-        return new Intelligence(name, missionInfos);
+        return new Intelligence(name, missionInfos, subRegisterAwaiter);
     }
 
     private static Thread initializeIntelligenceThread(Intelligence intelligence) {
@@ -182,18 +189,18 @@ public class MI6Runner {
         return Arrays.asList(mission.serialAgentsNumbers);
     }
 
-    private static Thread initializeQ(Inventory inventory) {
-        Q q = new Q("Q", inventory);
+    private static Thread initializeQ(Inventory inventory, CountDownLatch subRegisterAwaiter) {
+        Q q = new Q("Q", inventory, subRegisterAwaiter);
         Thread qThread = new Thread(q);
         qThread.setName(q.getName());
         return qThread;
     }
 
-    private static Thread[] initializeMs(Services services, Diary diary) {
+    private static Thread[] initializeMs(Services services, Diary diary, CountDownLatch subRegisterAwaiter) {
         int count = services.M;
         Thread[] mThreads = new Thread[count];
         for (int i = 0; i < count; i++) {
-            M m = new M(i + 1, diary);
+            M m = new M(i + 1, diary, subRegisterAwaiter);
             Thread thread = new Thread(m);
             thread.setName(m.getName());
             mThreads[i] = thread;
@@ -202,28 +209,28 @@ public class MI6Runner {
         return mThreads;
     }
 
-    private static Thread[] initializeMoneypennies(Services services) {
+    private static Thread[] initializeMoneypennies(Services services, CountDownLatch subRegisterAwaiter) {
         int count = services.Moneypenny;
         Thread[] moneypennyThreads = new Thread[count];
-        initializeMoneypennies(moneypennyThreads);
+        initializeMoneypennies(moneypennyThreads, subRegisterAwaiter);
         return moneypennyThreads;
     }
 
-    private static void initializeMoneypennies(Thread[] moneypennyThreads) {
+    private static void initializeMoneypennies(Thread[] moneypennyThreads, CountDownLatch subRegisterAwaiter) {
         int count = moneypennyThreads.length;
         int missionHandlersCount = (count / 2);
         int agentManagersCount = count - missionHandlersCount;
         Moneypenny.Releaser releaser = new Moneypenny.Releaser(agentManagersCount);
 
         int iNext = 0;
-        iNext = initializeMoneypennies(moneypennyThreads, iNext, missionHandlersCount, releaser, Moneypenny.SubscribeTO.SendAndRelease);
-        iNext = initializeMoneypennies(moneypennyThreads, iNext, agentManagersCount, releaser, Moneypenny.SubscribeTO.AgentsAvailable);
+        iNext = initializeMoneypennies(moneypennyThreads, iNext, missionHandlersCount, releaser, Moneypenny.SubscribeTO.SendAndRelease, subRegisterAwaiter);
+        iNext = initializeMoneypennies(moneypennyThreads, iNext, agentManagersCount, releaser, Moneypenny.SubscribeTO.AgentsAvailable, subRegisterAwaiter);
     }
 
-    private static int initializeMoneypennies(Thread[] moneypennyThreads, int iStart, int count, Moneypenny.Releaser releaser, Moneypenny.SubscribeTO duty) {
+    private static int initializeMoneypennies(Thread[] moneypennyThreads, int iStart, int count, Moneypenny.Releaser releaser, Moneypenny.SubscribeTO duty, CountDownLatch subRegisterAwaiter) {
         int iEnd = iStart + count;
         for (int i = iStart; i < iEnd; i++) {
-            Moneypenny moneypenny = new Moneypenny(i + 1, releaser, duty);
+            Moneypenny moneypenny = new Moneypenny(i + 1, releaser, duty, subRegisterAwaiter);
             Thread thread = new Thread(moneypenny);
             thread.setName(moneypenny.getName());
             moneypennyThreads[i] = thread;
@@ -236,7 +243,7 @@ public class MI6Runner {
         list.addAll(Arrays.asList(arr));
     }
 
-    private static Iterable<Thread> startAll(List<Iterable<Thread>> splitThreads) {
+    private static Iterable<Thread> startAll(List<Iterable<Thread>> splitThreads, CountDownLatch subRegisterAwaiter) {
         ArrayList<Thread> threads = new ArrayList<>();
         for (Iterable<Thread> threadsGroup : splitThreads) {
             for (Thread thread : threadsGroup) {
@@ -245,8 +252,8 @@ public class MI6Runner {
             }
 
             try {
-                // Sleep to allow every subscriber to register before the publishers
-                Thread.sleep(100);
+                // Allow every subscriber to register before the publishers
+                subRegisterAwaiter.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

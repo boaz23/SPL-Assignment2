@@ -10,6 +10,7 @@ import bgu.spl.mics.application.passiveObjects.Report;
 import bgu.spl.mics.loggers.Loggers;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * M handles ReadyEvent - fills a report and sends agents to mission.
@@ -23,11 +24,13 @@ public class M extends Subscriber {
 	private final int serialNumber;
 	private int lastTick;
 	private final Diary diary;
+	private final CountDownLatch subRegisterAwaiter;
 
-	public M(int serialNumber, Diary diary) {
+	public M(int serialNumber, Diary diary, CountDownLatch subRegisterAwaiter) {
 		super("M" + serialNumber);
 		this.serialNumber = serialNumber;
 		this.diary = diary;
+		this.subRegisterAwaiter = subRegisterAwaiter;
 	}
 
 	@Override
@@ -35,6 +38,7 @@ public class M extends Subscriber {
 		subscribeBroadcast(LastTickBroadcast.class, this::onLastTimeTick);
 		subscribeBroadcast(TickBroadcast.class, this::onTimeTick);
 		subscribeEvent(MissionReceivedEvent.class, this::onMissionReceived);
+		subRegisterAwaiter.countDown();
 	}
 
 	private void onLastTimeTick(LastTickBroadcast b) {

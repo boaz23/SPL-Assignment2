@@ -14,6 +14,7 @@ import bgu.spl.mics.application.passiveObjects.Squad;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -30,13 +31,15 @@ public class Moneypenny extends Subscriber {
 	private int id;
 	private final Releaser releaser;
 	private SubscribeTO subscribeTo;
+	private final CountDownLatch subRegisterAwaiter;
 	private List<String> allAgentsSerialNumbers;
 
-	public Moneypenny(int id, Releaser releaser, SubscribeTO subscribeTo) {
+	public Moneypenny(int id, Releaser releaser, SubscribeTO subscribeTo, CountDownLatch subRegisterAwaiter) {
 		super("Moneypenny"+ id);
 		this.id = id;
 		this.releaser = releaser;
 		this.subscribeTo = subscribeTo;
+		this.subRegisterAwaiter = subRegisterAwaiter;
 		squad = Squad.getInstance();
 	}
 
@@ -53,6 +56,7 @@ public class Moneypenny extends Subscriber {
 			subscribeEvent(SendAgentsEvent.class, this::sendAgentsCallback);
 			subscribeEvent(ReleaseAgentsEvent.class, this::releaseAgentsCallback);
 		}
+		subRegisterAwaiter.countDown();
 	}
 
 	/**
@@ -71,8 +75,6 @@ public class Moneypenny extends Subscriber {
 	}
 
 	private void sendAgentsCallback(SendAgentsEvent sendAgentsEvent) throws InterruptedException {
-		Loggers.MnMPLogger.appendLine(getName() + " handling " + sendAgentsEvent);
-
 		SendAgentsEventArgs sendAgentsEventArgs = sendAgentsEvent.getArgs();
 		Loggers.DefaultLogger.appendLine(getName() + " executing mission: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		squad.sendAgents(sendAgentsEventArgs.serialAgentsNumbers(),

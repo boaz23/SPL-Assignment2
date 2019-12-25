@@ -7,6 +7,7 @@ import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * A Publisher\Subscriber.
@@ -17,10 +18,12 @@ import java.util.*;
  */
 public class Intelligence extends Subscriber {
 
+	private final CountDownLatch subRegisterAwaiter;
 	private Map<Integer, LinkedList<MissionInfo>> missionInfos;
 
-	public Intelligence(String name, MissionInfo[] missions) {
+	public Intelligence(String name, MissionInfo[] missions, CountDownLatch subRegisterAwaiter) {
 		super(name);
+		this.subRegisterAwaiter = subRegisterAwaiter;
 		missionInfos = new HashMap<>();
 		for(MissionInfo mission : missions){
 			List<MissionInfo> list =  missionInfos.computeIfAbsent(mission.getTimeIssued(), t -> new LinkedList<>());
@@ -32,6 +35,7 @@ public class Intelligence extends Subscriber {
 	protected void initialize() {
 		subscribeBroadcast(TickBroadcast.class, this::TickBroadcastCallBack);
 		subscribeBroadcast(LastTickBroadcast.class, this::lastTickBroadcast);
+		subRegisterAwaiter.countDown();
 	}
 
 	private void TickBroadcastCallBack(TickBroadcast tick) throws InterruptedException {

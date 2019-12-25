@@ -3,10 +3,7 @@ import bgu.spl.mics.Utils;
 import bgu.spl.mics.application.publishers.TimeService;
 import bgu.spl.mics.loggers.Loggers;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -112,6 +109,13 @@ public class Squad {
 
 		return names;
     }
+
+	/**
+	 * @return The serial numbers of all agents
+	 */
+	public Map<String, Agent> getAgentsMap() {
+    	return agents;
+	}
 
 	private static class InstanceHolder {
 		public static final Squad instance = new Squad();

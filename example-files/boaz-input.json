@@ -16,7 +16,7 @@
                             "006",
                             "007"
                         ],
-                        "duration": 100,
+                        "duration": 30,
                         "gadget": "Sky Hook",
                         "name": "Thunderball",
                         "timeExpired": 15,
@@ -31,7 +31,7 @@
                         "duration": 2,
                         "gadget": "Dagger shoe",
                         "name": "From Russia With Love",
-                        "timeExpired": 100,
+                        "timeExpired": 30,
                         "timeIssued": 15
                     },
                     {

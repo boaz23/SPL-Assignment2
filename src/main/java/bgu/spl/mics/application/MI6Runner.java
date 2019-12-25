@@ -52,14 +52,15 @@ public class MI6Runner {
     }
 
     private static void setLoggers() {
-        Loggers.DefaultLogger = Loggers.NoLogger;
-        Loggers.MI6RunnerLogger = Loggers.NoLogger;
-        Loggers.MnMPLogger = Loggers.NoLogger;
+        Loggers.DefaultLogger = Loggers.StringBufferLogger;
+        Loggers.MI6RunnerLogger = Loggers.StringBufferLogger;
+        Loggers.MnMPLogger = Loggers.StringBufferLogger;
     }
 
     private static void run(Config config) {
         List<Iterable<Thread>> splitThreads = initialize(config);
         Iterable<Thread> threads = startAll(splitThreads);
+        startInterrupter();
         waitForFinish(threads);
         if (Thread.currentThread().isInterrupted()) {
             Iterable<Thread> aliveThreads = findAllAlive(threads);
@@ -212,15 +213,17 @@ public class MI6Runner {
         int count = moneypennyThreads.length;
         int missionHandlersCount = (count / 2);
         int agentManagersCount = count - missionHandlersCount;
+        Moneypenny.Releaser releaser = new Moneypenny.Releaser(agentManagersCount);
+
         int iNext = 0;
-        iNext = initializeMoneypennies(moneypennyThreads, iNext, missionHandlersCount, Moneypenny.SubscribeTO.SendAndRelease);
-        iNext = initializeMoneypennies(moneypennyThreads, iNext, agentManagersCount, Moneypenny.SubscribeTO.AgentsAvailable);
+        iNext = initializeMoneypennies(moneypennyThreads, iNext, missionHandlersCount, releaser, Moneypenny.SubscribeTO.SendAndRelease);
+        iNext = initializeMoneypennies(moneypennyThreads, iNext, agentManagersCount, releaser, Moneypenny.SubscribeTO.AgentsAvailable);
     }
 
-    private static int initializeMoneypennies(Thread[] moneypennyThreads, int iStart, int count, Moneypenny.SubscribeTO duty) {
+    private static int initializeMoneypennies(Thread[] moneypennyThreads, int iStart, int count, Moneypenny.Releaser releaser, Moneypenny.SubscribeTO duty) {
         int iEnd = iStart + count;
         for (int i = iStart; i < iEnd; i++) {
-            Moneypenny moneypenny = new Moneypenny(i + 1, duty);
+            Moneypenny moneypenny = new Moneypenny(i + 1, releaser, duty);
             Thread thread = new Thread(moneypenny);
             thread.setName(moneypenny.getName());
             moneypennyThreads[i] = thread;

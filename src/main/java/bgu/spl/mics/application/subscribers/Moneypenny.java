@@ -11,7 +11,10 @@ import bgu.spl.mics.application.messages.eventsInfo.ReleaseAgentsEventArgs;
 import bgu.spl.mics.application.messages.eventsInfo.SendAgentsEventArgs;
 import bgu.spl.mics.application.passiveObjects.Squad;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Only this type of Subscriber can access the squad.
@@ -25,16 +28,16 @@ public class Moneypenny extends Subscriber {
 
 	private Squad squad;
 	private int id;
+	private final Releaser releaser;
 	private SubscribeTO subscribeTo;
+	private List<String> allAgentsSerialNumbers;
 
-	private List<String> lastAcquiredAgents;
-
-	public Moneypenny(int id, SubscribeTO subscribeTo) {
+	public Moneypenny(int id, Releaser releaser, SubscribeTO subscribeTo) {
 		super("Moneypenny"+ id);
 		this.id = id;
+		this.releaser = releaser;
 		this.subscribeTo = subscribeTo;
 		squad = Squad.getInstance();
-		lastAcquiredAgents = null;
 	}
 
 	/**
@@ -57,17 +60,13 @@ public class Moneypenny extends Subscriber {
 	 * @param aAE AgentsAvailableEvent
 	 */
 	private void agentsAvailableCallback(AgentsAvailableEvent aAE){
-//		Loggers.MnMPLogger.appendLine(getName() + " handling " + aAE);
-
 		List<String> agents = aAE.getArgs().agentsSerialNumbers();
 		boolean agentsExist = squad.getAgents(agents);
+		releaser.notifyHelpers();
 
-		if (agentsExist) {
-			lastAcquiredAgents = agents;
-		}
 		if (Thread.currentThread().isInterrupted()) {
 			Loggers.DefaultLogger.appendLine(getName() + " interrupted");
-			releaseAndTerminate();
+			cleanupAndTerminate();
 		}
 		else {
 			Loggers.DefaultLogger.appendLine(getName() + " completing " + aAE);
@@ -97,21 +96,105 @@ public class Moneypenny extends Subscriber {
 	private void releaseAgentsCallback(ReleaseAgentsEvent releaseAgentsEvent){
 		Loggers.DefaultLogger.appendLine(getName() + " handling " + releaseAgentsEvent);
 		ReleaseAgentsEventArgs releaseAgentsEventArgs = releaseAgentsEvent.getArgs();
-		squad.releaseAgents(releaseAgentsEventArgs.serialAgentsNumbers());
+		releaseAgents(releaseAgentsEventArgs.serialAgentsNumbers());
 		Loggers.DefaultLogger.appendLine(getName() + " completing " + releaseAgentsEvent);
 		complete(releaseAgentsEvent, null);
 	}
 
 	private void lastTickBroadcastCallback(LastTickBroadcast lastTickBroadcast){
-		releaseAndTerminate();
+		cleanupAndTerminate();
 	}
 
-	private void releaseAndTerminate() {
-		if (lastAcquiredAgents != null) {
-			squad.releaseAgents(lastAcquiredAgents);
+	private void cleanupAndTerminate() {
+		if (subscribeTo == SubscribeTO.AgentsAvailable) {
+			releaser.decrement();
+		}
+		else {
+			helpReleaseAgents();
 		}
 
 		terminate();
+	}
+
+	private void helpReleaseAgents() {
+		synchronized (releaser) {
+			while (releaser.count() > 0) {
+				releaseAllAgents();
+				try {
+					releaser.awaitRelease();
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					break;
+				}
+			}
+		}
+	}
+
+	private void releaseAllAgents() {
+		releaseAgents(getAllAgentsSerialNumbers());
+	}
+
+	private void releaseAgents(List<String> allAgentsSerialNumbers) {
+		squad.releaseAgents(allAgentsSerialNumbers);
+	}
+
+	private List<String> getAllAgentsSerialNumbers() {
+		if (allAgentsSerialNumbers == null) {
+			Set<String> allAgentsSerialNumbers = squad.getAgentsMap().keySet();
+			this.allAgentsSerialNumbers = new ArrayList<>(allAgentsSerialNumbers);
+		}
+		return allAgentsSerialNumbers;
+	}
+
+	/**
+	 * An object responsible for releasing agents when the program is terminating to
+	 * allow moneypennies who are stuck on agents acquisition to terminate gracefully
+	 */
+	public static class Releaser {
+		private AtomicInteger count;
+
+		/**
+		 * Initializes a new releaser with the given count
+		 * @param count The count of moneypennies who perform get agents who'll need
+		 * to be terminated before terminating the rest
+		 */
+		public Releaser(int count) {
+			this.count = new AtomicInteger(count);
+		}
+
+		/**
+		 * @return The amount of remaining moneypennies to wait for
+		 */
+		public int count() {
+			return count.get();
+		}
+
+		/**
+		 * Notifies that there's one less moneypenny to wait for termination
+		 */
+		public void decrement() {
+			count.decrementAndGet();
+			notifyHelpers();
+		}
+
+		/**
+		 * Notify all moneypennies who release to act if necessary
+		 */
+		public void notifyHelpers() {
+			synchronized (this) {
+				notifyAll();
+			}
+		}
+
+		/**
+		 * Waits for the notification of a moneypenny who get agents and terminates or about to acquire them
+		 * @throws InterruptedException see Object.wait() exception
+		 */
+		public void awaitRelease() throws InterruptedException {
+			synchronized (this) {
+				wait();
+			}
+		}
 	}
 }
 

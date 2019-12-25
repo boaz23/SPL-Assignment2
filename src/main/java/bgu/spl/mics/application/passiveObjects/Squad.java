@@ -74,10 +74,6 @@ public class Squad {
 			serials.sort(String.CASE_INSENSITIVE_ORDER);
 			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " getting agents " + Utils.listToString(serials));
 			for (String serial : serials) {
-				if (Thread.currentThread().isInterrupted()) {
-					break;
-				}
-
 				Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " trying to acquire " + serial);
 				Agent agent = agents.get(serial);
 				agent.acquire();

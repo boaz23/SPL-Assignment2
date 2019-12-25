@@ -39,11 +39,6 @@ public class Intelligence extends Subscriber {
 		LinkedList<MissionInfo> list =  missionInfos.getOrDefault(tickTime, null);
 		if(list != null){
 			for (MissionInfo mission: list) {
-				if (Thread.currentThread().isInterrupted()) {
-					terminate();
-					break;
-				}
-
 				sendEvent(new MissionReceivedEvent(mission));
 			}
 		}

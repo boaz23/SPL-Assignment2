@@ -64,16 +64,10 @@ public class Moneypenny extends Subscriber {
 		boolean agentsExist = squad.getAgents(agents);
 		releaser.notifyHelpers();
 
-		if (Thread.currentThread().isInterrupted()) {
-			Loggers.DefaultLogger.appendLine(getName() + " interrupted");
-			cleanupAndTerminate();
-		}
-		else {
-			Loggers.DefaultLogger.appendLine(getName() + " completing " + aAE);
-			AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist,
-					agentsExist ? squad.getAgentsNames(agents) : null, agents, id);
-			complete(aAE, agentsAvailableResult);
-		}
+		Loggers.DefaultLogger.appendLine(getName() + " completing " + aAE);
+		AgentsAvailableResult agentsAvailableResult = new AgentsAvailableResult(agentsExist,
+				agentsExist ? squad.getAgentsNames(agents) : null, agents, id);
+		complete(aAE, agentsAvailableResult);
 	}
 
 	private void sendAgentsCallback(SendAgentsEvent sendAgentsEvent) throws InterruptedException {
@@ -83,14 +77,8 @@ public class Moneypenny extends Subscriber {
 		Loggers.DefaultLogger.appendLine(getName() + " executing mission: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 		squad.sendAgents(sendAgentsEventArgs.serialAgentsNumbers(),
 				sendAgentsEventArgs.duration());
-
-		if (Thread.currentThread().isInterrupted()) {
-			Loggers.MnMPLogger.appendLine(Thread.currentThread().getName() + " interrupted while in mission " + sendAgentsEvent.getArgs().getMissionName());
-			terminate();
-		} else {
-			Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
-			complete(sendAgentsEvent, null);
-		}
+		complete(sendAgentsEvent, null);
+		Loggers.DefaultLogger.appendLine("Mission ended: '" + sendAgentsEvent.getArgs().getMissionName() + "'");
 	}
 
 	private void releaseAgentsCallback(ReleaseAgentsEvent releaseAgentsEvent){

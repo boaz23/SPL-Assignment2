@@ -53,10 +53,6 @@ public class M extends Subscriber {
 		diary.incrementTotal();
 
 		MissionPreparation missionPreparation = checkValidity(missionInfo);
-		if (Thread.currentThread().isInterrupted()) {
-			Loggers.MnMPLogger.appendLine(getName() + " interrupted.");
-			missionPreparation.setStatus(ActionStatus.Terminate);
-		}
 		switch (missionPreparation.getStatus()) {
 			case Terminate:
 				terminate();
@@ -84,21 +80,12 @@ public class M extends Subscriber {
 		};
 
 		for (MissionPreparationNeedProvider<?> missionNeed : missionNeeds) {
-			if (Thread.currentThread().isInterrupted()) {
-				missionPreparation.setStatus(ActionStatus.Terminate);
-				return missionPreparation;
-			}
-
 			Loggers.MnMPLogger.appendLine(getName() + " trying to fulfill need " + missionNeed.getName());
 			if (!missionNeed.tryFulfillNeed()) {
 				Loggers.MnMPLogger.appendLine(getName() + ": Need " + missionNeed.getName() + " failed to be fulfilled");
 				// Abort the mission because one of the mission prerequisite failed to be fulfilled
 				return missionPreparation;
 			}
-		}
-		if (Thread.currentThread().isInterrupted()) {
-			missionPreparation.setStatus(ActionStatus.Terminate);
-			return missionPreparation;
 		}
 
 		if (lastTick >= missionInfo.getTimeExpired()) {

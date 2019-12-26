@@ -1,6 +1,7 @@
 package bgu.spl.mics.loggers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Loggers {
     public static Logger NoLogger;
@@ -17,6 +18,12 @@ public class Loggers {
         DefaultLogger = NoLogger;
         MI6RunnerLogger = NoLogger;
         MnMPLogger = NoLogger;
+    }
+
+    public static Iterable<Logger> getLoggers() {
+        return new ArrayList<Logger>() {{
+            add(StringBufferLogger);
+        }};
     }
 
     private static Logger initFileLogger(String filePath) {

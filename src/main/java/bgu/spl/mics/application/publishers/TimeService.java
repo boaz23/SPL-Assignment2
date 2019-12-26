@@ -72,7 +72,7 @@ public class TimeService extends Publisher {
 				sendBroadcast(tickBroadcast);
 				tick = tick +1;
 			} else {
-				Loggers.MI6RunnerLogger.appendLine(getName() + " sending last tick");
+				Loggers.MnMPLogger.appendLine(getName() + " sending last tick");
 				LastTickBroadcast lastTickBroadcast = new LastTickBroadcast(tick);
 				sendBroadcast(lastTickBroadcast);
 				synchronized (notify){

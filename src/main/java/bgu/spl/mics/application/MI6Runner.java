@@ -45,17 +45,16 @@ public class MI6Runner {
 
         setLoggers();
         run(config);
-        printLogsToTerminal();
         if (!Thread.currentThread().isInterrupted()) {
             printOutputToFiles(inventoryOutputFilePath, diaryOutputFilePath);
         }
+        printLogsToTerminal();
     }
 
     private static void setLoggers() {
-        Loggers.StringBufferLogger = new StringBufferLogger();
-        Loggers.DefaultLogger = Loggers.StringBufferLogger;
-        Loggers.MI6RunnerLogger = Loggers.StringBufferLogger;
-        Loggers.MnMPLogger = Loggers.StringBufferLogger;
+        Loggers.DefaultLogger = Loggers.NoLogger;
+        Loggers.MI6RunnerLogger = Loggers.NoLogger;
+        Loggers.MnMPLogger = Loggers.NoLogger;
     }
 
     private static void run(Config config) {
@@ -323,20 +322,24 @@ public class MI6Runner {
     }
 
     private static void printOutputToFiles(String inventoryOutputFilePath, String diaryOutputFilePath) {
-        System.out.println("Printing output to files...");
+        Loggers.MI6RunnerLogger.appendLine("Printing output to files...");
         printInventoryToFile(inventoryOutputFilePath);
         printDiaryToFile(diaryOutputFilePath);
     }
 
     private static void printLogsToTerminal() {
-        printLogToTerminal(Loggers.DefaultLogger);
-        printLogToTerminal(Loggers.StringBufferLogger);
+        for (Logger logger : Loggers.getLoggers()) {
+            printLogToTerminal(logger);
+        }
     }
 
     private static void printLogToTerminal(Logger logger) {
         try {
             logger.flush();
-            System.out.println(logger);
+            String s = logger.toString();
+            if (!s.equals("")) {
+                System.out.println(logger);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -355,7 +358,6 @@ public class MI6Runner {
     }
 
     private static void printErr(String msg) {
-        System.out.println(msg);
         System.err.println(msg);
     }
 }

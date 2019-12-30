@@ -1,0 +1,71 @@
+{
+    "inventory": [ 
+        "Sky Hook",
+        "Geiger counter",
+        "X-ray Glasses",
+        "Dagger shoe"
+    ],
+    "services": {
+        "M": 4,
+        "Moneypenny": 4,
+        "intelligence": [
+            {
+                "missions": [
+                    {
+                        "serialAgentsNumbers": [
+                            "001"
+                        ],
+                        "duration": 5,
+                        "gadget": "Sky Hook",
+                        "missionName": "Thunderball",
+                        "timeExpired": 4,
+                        "timeIssued": 1
+                    },
+                    {
+                        "serialAgentsNumbers": ["002"],
+                        "duration": 5,
+                        "gadget": "Dagger shoe",
+                        "missionName": "From Russia With Love",
+                        "timeExpired": 4,
+                        "timeIssued": 1
+                    },
+                    {
+                        "serialAgentsNumbers": ["003"],
+                        "duration": 5,
+                        "gadget": "Geiger counter",
+                        "missionName": "Hello World",
+                        "timeExpired": 4,
+                        "timeIssued": 1
+                    },
+                    {
+                        "serialAgentsNumbers": ["004"],
+                        "duration": 5,
+                        "gadget": "X-ray Glasses",
+                        "missionName": "The World Is Not Enough",
+                        "timeExpired": 4,
+                        "timeIssued": 1
+                    }
+                ]
+            }
+        ],
+        "time": 5
+    },
+    "squad": [
+        {
+            "name": "A",
+            "serialNumber": "001"
+        },
+	{
+            "name": "B",
+            "serialNumber": "002"
+        },
+	{
+            "name": "C",
+            "serialNumber": "003"
+        },
+        {
+            "name": "D",
+            "serialNumber": "004"
+        }
+    ]
+}

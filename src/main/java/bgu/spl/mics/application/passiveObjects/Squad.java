@@ -16,7 +16,8 @@ public class Squad {
 
 	private Map<String, Agent> agents;
 
-	private Squad() {
+	// NOTE: should be private, but it's said not to change signatures of public methods
+	public Squad() {
 		this.agents = new HashMap<>();
 	}
 

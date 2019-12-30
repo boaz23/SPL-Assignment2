@@ -1,0 +1,50 @@
+{
+  "reports": [
+    {
+      "missionName": "Land of Riches",
+      "m": 1,
+      "moneypenny": 6,
+      "agentsSerialNumbers": [
+        "007"
+      ],
+      "agentsNames": [
+        "James Bond"
+      ],
+      "gadgetName": "Pistol",
+      "timeIssued": 2,
+      "qTime": 2,
+      "timeCreated": 2
+    },
+    {
+      "missionName": "Biara\u0027s Castle",
+      "m": 4,
+      "moneypenny": 10,
+      "agentsSerialNumbers": [
+        "007"
+      ],
+      "agentsNames": [
+        "James Bond"
+      ],
+      "gadgetName": "Tank",
+      "timeIssued": 3,
+      "qTime": 6,
+      "timeCreated": 3
+    },
+    {
+      "missionName": "Thunderball",
+      "m": 2,
+      "moneypenny": 7,
+      "agentsSerialNumbers": [
+        "007"
+      ],
+      "agentsNames": [
+        "James Bond"
+      ],
+      "gadgetName": "Sky Hook",
+      "timeIssued": 3,
+      "qTime": 8,
+      "timeCreated": 3
+    }
+  ],
+  "total": 5
+}

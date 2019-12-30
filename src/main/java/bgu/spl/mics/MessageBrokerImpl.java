@@ -24,8 +24,9 @@ public class MessageBrokerImpl implements MessageBroker {
 
 	/**
 	 * Initializes this message broker instance
+	 * NOTE: should be private, but it's said not to change signatures of public methods
 	 */
-	private MessageBrokerImpl() {
+	public MessageBrokerImpl() {
 		subscriberQueues = new ConcurrentHashMap<>();
 
 		// We should use the read/write lock seen in class rather than the java's library ReentrantReadWriteLock
